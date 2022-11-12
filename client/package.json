@@ -1,0 +1,13 @@
+{
+  "name": "client",
+  "packageManager": "yarn@3.2.4",
+  "devDependencies": {
+    "@babel/core": "^7.12.0",
+    "parcel": "^2.8.0",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "babel-preset-solid": "^1.6.2",
+    "solid-js": "^1.6.2"
+  }
+}
