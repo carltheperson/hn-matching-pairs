@@ -1,7 +1,8 @@
 import { createSignal } from "solid-js";
+import { render } from "solid-js/web";
 
 function MyComponent(props) {
   return <div>Hello {props.name}</div>;
 }
 
-console.log("Hello", <MyComponent name="Solid" />, createSignal);
+render(() => <MyComponent name="Solid" />, document.documentElement);
