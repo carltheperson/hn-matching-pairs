@@ -1,3 +1,74 @@
+$card-height: 9rem;
+$card-width: 6rem;
+$card-height-ratio: calc($card-height / $card-width);
+
+html {
+  font-size: 14px;
+  @media (min-width: 768px) {
+    font-size: 16px;
+  }
+  @media (min-width: 1024px) {
+    font-size: 18px;
+  }
+  // @media (min-width: 1280px) {
+  //   font-size: 20px;
+  // }
+}
+
 body {
-  background-color: red;
+  background-color: #f6f6f0;
+  font-family: Verdana, Geneva, sans-serif;
+}
+
+@mixin grid($rows-n, $cols-n) {
+  // They call me the CSS grid master 😎
+  $gap: 2vw;
+  $width: min($card-width, calc((100vw - ($gap * ($cols-n))) / $cols-n));
+  $height: calc($width * $card-height-ratio);
+  grid-template: repeat($rows-n, $height) / repeat($cols-n, $width);
+  gap: $gap;
+}
+
+#root > div {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+
+  .title {
+    text-align: center;
+    font-size: 3.5rem;
+    @media (max-width: 600px) {
+      font-size: 2rem;
+    }
+    margin-top: 2rem;
+    span {
+      color: #ef7d44;
+    }
+  }
+
+  .cards {
+    display: grid;
+    justify-content: center;
+    @media (min-width: 1600px) {
+      @include grid($rows-n: 2, $cols-n: 8);
+    }
+    @media screen and (min-width: 0px) and (max-width: 1600px) {
+      @include grid($rows-n: 4, $cols-n: 4);
+    }
+    .card {
+      max-width: 100%;
+      justify-self: stretch;
+      border-radius: 15%;
+      background-color: #fa7b38;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      &::before {
+        content: "Y";
+        text-align: center;
+        font-size: 5.5rem;
+      }
+    }
+  }
 }
