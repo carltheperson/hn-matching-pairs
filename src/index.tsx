@@ -3,10 +3,7 @@ import { render } from "solid-js/web";
 import { fetchData } from "./fetch-data";
 
 /*
-[x] Units for text that scales
-[ ] Simple card
-[ ] CSS grid
-*/
+ */
 
 export const POST_COUNT = 10;
 
@@ -19,22 +16,14 @@ function Main() {
         <span>HN</span> Matching Pairs
       </h1>
       <div class="cards">
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
+        {Array.from({ length: 16 }).map(() => (
+          <div class="card">
+            <div class="inner">
+              <div class="front"></div>
+              <div class="back">Hello back</div>
+            </div>
+          </div>
+        ))}
       </div>
       {/* <For each={data()} fallback={<div>Loading...</div>}>
         {(item) => (
