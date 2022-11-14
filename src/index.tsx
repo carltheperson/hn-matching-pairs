@@ -17,10 +17,12 @@ function Main() {
       </h1>
       <div class="cards">
         {Array.from({ length: 16 }).map(() => (
-          <div class="card">
-            <div class="inner">
-              <div class="front"></div>
-              <div class="back">Hello back</div>
+          <div class="card-outer">
+            <div class="card">
+              <div class="inner">
+                <div class="front"></div>
+                <div class="back">A whole buuunch of text here</div>
+              </div>
             </div>
           </div>
         ))}
