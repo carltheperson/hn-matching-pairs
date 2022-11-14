@@ -138,9 +138,12 @@ body {
             background-color: #fa7b38;
             &::before {
               content: "Y";
-              text-align: center;
-              font-size: 6.5rem;
+              font-size: 10rem;
               color: white;
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translateY(-50%) translateX(-50%);
             }
           }
 

@@ -24,7 +24,8 @@ function Main() {
                   <div class="front"></div>
                   <div class="back">
                     A whole buuunch of text here Lorem ipsum dolor sit amet
-                    consectetur adipisicing elit.
+                    consectetur adipisicing elit. Lorem ipsum dolor sit amet,
+                    consectetur adipisicing elit. Est dolorem earum
                   </div>
                 </div>
               </div>
