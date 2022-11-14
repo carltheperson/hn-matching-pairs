@@ -2,6 +2,9 @@ $card-height: 9rem;
 $card-width: 6rem;
 $card-height-ratio: calc($card-height / $card-width);
 
+$card-flip-scale: 0.5;
+$card-flip-scale-reverse: calc(1 / $card-flip-scale);
+
 html {
   font-size: 14px;
   @media (min-width: 768px) {
@@ -18,26 +21,48 @@ html {
 body {
   background-color: #f6f6f0;
   font-family: Verdana, Geneva, sans-serif;
+  padding: 0;
+  margin: 0;
 }
 
 @mixin grid($rows-n, $cols-n) {
-  // They call me the CSS grid master 😎
   $gap: 2.25vw;
+
   $width: min($card-width, calc((100vw - ($gap * ($cols-n))) / $cols-n));
   $height: calc($width * $card-height-ratio);
-  grid-template: repeat($rows-n, $height) / repeat($cols-n, $width);
-  gap: $gap;
+
+  $width-adjusted: calc($width * $card-flip-scale-reverse);
+  $height-adjusted: calc($height * $card-flip-scale-reverse);
+
+  .cards {
+    position: relative;
+    display: grid;
+    grid-template: repeat($rows-n, $height) / repeat($cols-n, $width);
+    gap: $gap;
+
+    .card-outer {
+      position: relative;
+      width: $width-adjusted;
+      height: $height-adjusted;
+      right: calc(1 * ($width-adjusted / 4));
+      top: calc(-1 * ($height-adjusted / 4));
+    }
+  }
+  // $grid-width: calc($width * $cols-n + $gap * ($cols-n - 1)) !important;
+  // width: $grid-width;
+  margin: auto;
 }
 
 @mixin displayCard {
-  transform: rotateY(180deg);
-  width: calc($card-width * 1.8);
-  height: calc($card-height * 1.8);
+  transform: rotateY(180deg) scale(1);
+  $scale: 1.5;
+  // width: calc($card-width * $scale);
+  // height: calc($card-height * $scale);
   box-shadow: 0 0 25px rgba(0, 0, 0, 0.25);
 }
 
 @mixin displayCardReverse {
-  transform: rotateY(0);
+  transform: rotateY(0) scale($card-flip-scale);
   width: 100%;
   height: 100%;
 }
@@ -46,6 +71,7 @@ body {
   display: flex;
   justify-content: center;
   flex-direction: column;
+  // align-items: center;
 
   .title {
     text-align: center;
@@ -59,89 +85,88 @@ body {
     }
   }
 
-  .cards {
-    display: grid;
-    justify-content: center;
+  .cards-outer {
     @media (min-width: 1600px) {
       @include grid($rows-n: 2, $cols-n: 8);
     }
     @media screen and (min-width: 0px) and (max-width: 1600px) {
       @include grid($rows-n: 4, $cols-n: 4);
     }
-    .card-outer {
-      .card {
-        width: 100%;
-        height: 100%;
-        max-width: 100%;
-        justify-self: stretch;
-        border-radius: 12%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: white;
-
-        position: relative;
-        perspective: 500px;
-        .inner {
-          position: absolute;
+    .cards {
+      .card-outer {
+        .card {
           width: 100%;
           height: 100%;
-          box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-          transition: transform 1s;
-          transform-style: preserve-3d;
-        }
+          max-width: 100%;
+          justify-self: stretch;
+          border-radius: 12%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          color: white;
 
-        .back,
-        .front {
-          position: absolute;
-          height: 100%;
-          width: 100%;
-          text-align: center;
-          font-size: 10px;
-          border-radius: 5px;
-          backface-visibility: hidden;
-        }
+          position: relative;
+          perspective: 500px;
+          .inner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            transition: transform 1s;
+            transform-style: preserve-3d;
+          }
 
-        .back {
-          z-index: 2;
-          background-color: white;
-          color: black;
-          transform: rotateY(180deg);
-          border: #ef7d4464 solid 1.5px;
-        }
-
-        .front {
-          background-color: #fa7b38;
-          &::before {
-            content: "Y";
+          .back,
+          .front {
+            position: absolute;
+            height: 100%;
+            width: 100%;
             text-align: center;
-            font-size: 6.5rem;
-            color: white;
+            border-radius: 5px;
+            backface-visibility: hidden;
           }
-        }
 
-        &:hover {
-          z-index: 100;
-          .inner {
-            // transform: rotateY(180deg);
-            // transition: transform 0.5s;
-            // width: 500px;
-            animation-duration: 1s;
-            animation-name: flip;
-            @include displayCard();
+          .back {
+            z-index: 2;
+            background-color: white;
+            color: black;
+            transform: rotateY(180deg);
+            border: #ef7d4464 solid 1.5px;
           }
-        }
 
-        &:not(:hover) {
-          animation-duration: 1s;
-          animation-name: increasedZIndex;
-          .inner {
-            // transform: rotateY(180deg);
-            // transition: transform 0.5s;
-            // width: 500px;
+          .front {
+            background-color: #fa7b38;
+            &::before {
+              content: "Y";
+              text-align: center;
+              font-size: 6.5rem;
+              color: white;
+            }
+          }
+
+          &:hover {
+            z-index: 100;
+            .inner {
+              // transform: rotateY(180deg);
+              // transition: transform 0.5s;
+              // width: 500px;
+              animation-duration: 1s;
+              animation-name: flip;
+              @include displayCard();
+            }
+          }
+
+          &:not(:hover) {
             animation-duration: 1s;
-            animation-name: flipBack;
-            @include displayCardReverse();
+            animation-name: increasedZIndex;
+            .inner {
+              // transform: rotateY(180deg);
+              // transition: transform 0.5s;
+              // width: 500px;
+              animation-duration: 1s;
+              animation-name: flipBack;
+              @include displayCardReverse();
+            }
           }
         }
       }

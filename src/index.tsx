@@ -15,17 +15,22 @@ function Main() {
       <h1 class="title">
         <span>HN</span> Matching Pairs
       </h1>
-      <div class="cards">
-        {Array.from({ length: 16 }).map(() => (
-          <div class="card-outer">
-            <div class="card">
-              <div class="inner">
-                <div class="front"></div>
-                <div class="back">A whole buuunch of text here</div>
+      <div class="cards-outer">
+        <div class="cards">
+          {Array.from({ length: 16 }).map(() => (
+            <div class="card-outer">
+              <div class="card">
+                <div class="inner">
+                  <div class="front"></div>
+                  <div class="back">
+                    A whole buuunch of text here Lorem ipsum dolor sit amet
+                    consectetur adipisicing elit.
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
       {/* <For each={data()} fallback={<div>Loading...</div>}>
         {(item) => (
