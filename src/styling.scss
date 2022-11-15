@@ -1,5 +1,5 @@
-$card-height: 9rem;
-$card-width: 6rem;
+$card-height: 11rem;
+$card-width: 8rem;
 $card-height-ratio: calc($card-height / $card-width);
 
 $card-flip-scale: 0.5;
@@ -23,6 +23,18 @@ body {
   font-family: Verdana, Geneva, sans-serif;
   padding: 0;
   margin: 0;
+  min-width: fit-content;
+  position: fixed;
+  overflow-y: scroll;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  min-height: 100vh;
+}
+
+#root {
+  overflow-y: scroll;
+  min-height: 100vh;
 }
 
 @mixin grid($rows-n, $cols-n) {
