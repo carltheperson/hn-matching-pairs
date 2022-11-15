@@ -35,6 +35,10 @@ body {
 #root {
   overflow-y: scroll;
   min-height: 100vh;
+
+  > div {
+    margin-bottom: -200px;
+  }
 }
 
 @mixin grid($rows-n, $cols-n) {
@@ -98,6 +102,10 @@ body {
   }
 
   .cards-outer {
+    > .pointer {
+      cursor: pointer;
+    }
+
     @media (min-width: 1600px) {
       @include grid($rows-n: 2, $cols-n: 8);
     }
@@ -159,7 +167,7 @@ body {
             }
           }
 
-          &:hover {
+          &.flipped {
             z-index: 100;
             .inner {
               // transform: rotateY(180deg);
@@ -171,7 +179,7 @@ body {
             }
           }
 
-          &:not(:hover) {
+          &:not(.flipped) {
             animation-duration: 1s;
             animation-name: increasedZIndex;
             .inner {
