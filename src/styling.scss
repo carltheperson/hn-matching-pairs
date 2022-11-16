@@ -60,20 +60,20 @@ body {
       position: relative;
       width: $width-adjusted;
       height: $height-adjusted;
-      right: calc(1 * ($width-adjusted / 4));
-      top: calc(-1 * ($height-adjusted / 4));
+      $horizontal: calc(($width-adjusted / 4));
+      $vertical: calc(($height-adjusted / 4));
+      right: $horizontal;
+      top: calc(-1 * $vertical);
+      left: calc(-1 * $horizontal);
+      bottom: $vertical;
     }
   }
-  // $grid-width: calc($width * $cols-n + $gap * ($cols-n - 1)) !important;
-  // width: $grid-width;
   margin: auto;
 }
 
 @mixin displayCard {
   transform: rotateY(180deg) scale(1);
   $scale: 1.5;
-  // width: calc($card-width * $scale);
-  // height: calc($card-height * $scale);
   box-shadow: 0 0 25px rgba(0, 0, 0, 0.25);
 }
 
@@ -87,7 +87,6 @@ body {
   display: flex;
   justify-content: center;
   flex-direction: column;
-  // align-items: center;
 
   .title {
     text-align: center;
@@ -114,6 +113,7 @@ body {
     }
     .cards {
       .card-outer {
+        position: relative;
         .card {
           width: 100%;
           height: 100%;
@@ -170,9 +170,6 @@ body {
           &.flipped {
             z-index: 100;
             .inner {
-              // transform: rotateY(180deg);
-              // transition: transform 0.5s;
-              // width: 500px;
               animation-duration: 1s;
               animation-name: flip;
               @include displayCard();
@@ -183,9 +180,6 @@ body {
             animation-duration: 1s;
             animation-name: increasedZIndex;
             .inner {
-              // transform: rotateY(180deg);
-              // transition: transform 0.5s;
-              // width: 500px;
               animation-duration: 1s;
               animation-name: flipBack;
               @include displayCardReverse();

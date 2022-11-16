@@ -43,42 +43,70 @@ function Main() {
       </h1>
       <div
         class="cards-outer"
-        onmousemove={(e) => {
-          const inner = getInnerElementFromEvent(e);
-          cardsRef.classList[inner ? "add" : "remove"]("pointer");
-        }}
+        onmousemove={(e) =>
+          cardsRef.classList[getInnerElementFromEvent(e) ? "add" : "remove"](
+            "pointer"
+          )
+        }
       >
         <div class="cards" ref={cardsRef}>
           <Index each={cards()}>
-            {(data) => (
-              <div
-                class="card-outer"
-                onClick={(e) => {
-                  const inner = getInnerElementFromEvent(e);
-                  if (inner) {
-                    const i = cards().findIndex((card) => card.elRef === inner);
-                    setCards((cards) => {
-                      cards[i] = {
-                        ...cards[i],
-                        flipped: !cards[i].flipped,
-                      };
-                      return [...cards];
-                    });
+            {(data) => {
+              let cardRef: HTMLDivElement;
+
+              createEffect(() => {
+                if (data().flipped) {
+                  cardRef.animate([{ left: "-210px" }], {
+                    duration: 1000,
+                    iterations: 1,
+                  }).onfinish = () => (cardRef.style.left = "-210px");
+                } else {
+                  if (cardRef.style.left) {
+                    const old = cardRef.style.left;
+                    cardRef.style.left = "";
+                    const left = getComputedStyle(cardRef).left;
+                    cardRef.style.left = old;
+                    cardRef.animate([{ left }], {
+                      duration: 1000,
+                      iterations: 1,
+                    }).onfinish = () => (cardRef.style.left = "");
                   }
-                }}
-              >
-                <div class="card" classList={{ flipped: data().flipped }}>
-                  <div class="inner" ref={data().elRef}>
-                    <div class="front"></div>
-                    <div class="back">
-                      A whole buuunch of text here Lorem ipsum dolor sit amet
-                      consectetur adipisicing elit. Lorem ipsum dolor sit amet,
-                      consectetur adipisicing elit. Est dolorem earum
+                }
+              });
+
+              return (
+                <div
+                  class="card-outer"
+                  ref={cardRef}
+                  onClick={(e) => {
+                    const inner = getInnerElementFromEvent(e);
+                    if (inner) {
+                      const i = cards().findIndex(
+                        (card) => card.elRef === inner
+                      );
+                      setCards((cards) => {
+                        cards[i] = {
+                          ...cards[i],
+                          flipped: !cards[i].flipped,
+                        };
+                        return [...cards];
+                      });
+                    }
+                  }}
+                >
+                  <div class="card" classList={{ flipped: data().flipped }}>
+                    <div class="inner" ref={data().elRef}>
+                      <div class="front"></div>
+                      <div class="back">
+                        A whole buuunch of text here Lorem ipsum dolor sit amet
+                        consectetur adipisicing elit. Lorem ipsum dolor sit
+                        amet, consectetur adipisicing elit. Est dolorem earum
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            }}
           </Index>
         </div>
       </div>
