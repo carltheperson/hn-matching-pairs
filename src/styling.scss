@@ -102,7 +102,9 @@ body {
 
   .cards-outer {
     > .pointer {
-      cursor: pointer;
+      @media screen and not (hover: none) {
+        cursor: pointer;
+      }
     }
 
     @media (min-width: 1600px) {

@@ -12,12 +12,39 @@ import { fetchData } from "./fetch-data";
 /*
  */
 
+const SIDES = [
+  {
+    name: "left",
+    coordVal: (rect: DOMRect) => rect.x + rect.width,
+    overflow: (coordVal: number) => Math.round(coordVal - window.innerWidth),
+    modifyWithCurrent: (current: number, overflow: number) =>
+      overflow - current,
+    prefix: "-",
+  },
+  {
+    name: "left",
+    coordVal: (rect: DOMRect) => rect.x,
+    overflow: (coordVal: number) => coordVal * -1,
+    modifyWithCurrent: (current: number, overflow: number) =>
+      overflow + current,
+    prefix: "",
+  },
+];
+
 export const POST_COUNT = 10;
 
 function getInnerElementFromEvent(e: MouseEvent) {
   const elements = document.elementsFromPoint(e.clientX, e.clientY);
   const inner = elements.find((el) => el.classList.contains("inner"));
   return inner;
+}
+
+function getNonInlineStyle(el: HTMLElement, key: string) {
+  const old = el.style[key];
+  el.style[key] = "";
+  const val = getComputedStyle(el)[key];
+  el.style[key] = old;
+  return val;
 }
 
 function Main() {
@@ -56,21 +83,43 @@ function Main() {
 
               createEffect(() => {
                 if (data().flipped) {
-                  cardRef.animate([{ left: "-210px" }], {
-                    duration: 1000,
-                    iterations: 1,
-                  }).onfinish = () => (cardRef.style.left = "-210px");
+                  SIDES.forEach(
+                    ({
+                      coordVal,
+                      modifyWithCurrent,
+                      name,
+                      overflow,
+                      prefix,
+                    }) => {
+                      const rec = cardRef.getBoundingClientRect();
+                      const coordVal_ = coordVal(rec);
+                      const overflow_ = overflow(coordVal_);
+                      if (overflow_ > 0) {
+                        const current = parseInt(
+                          getNonInlineStyle(cardRef, name)
+                        );
+                        const final = modifyWithCurrent(current, overflow_) + 5;
+                        const newVal = prefix + final + "px";
+                        if (name === "right") {
+                          console.log("", newVal);
+                        }
+                        cardRef.animate([{ [name]: newVal }], {
+                          duration: 1000,
+                          iterations: 1,
+                        }).onfinish = () => (cardRef.style[name] = newVal);
+                      }
+                    }
+                  );
                 } else {
-                  if (cardRef.style.left) {
-                    const old = cardRef.style.left;
-                    cardRef.style.left = "";
-                    const left = getComputedStyle(cardRef).left;
-                    cardRef.style.left = old;
-                    cardRef.animate([{ left }], {
-                      duration: 1000,
-                      iterations: 1,
-                    }).onfinish = () => (cardRef.style.left = "");
-                  }
+                  SIDES.forEach(({ name }) => {
+                    if (cardRef.style[name]) {
+                      const val = getNonInlineStyle(cardRef, name);
+                      cardRef.animate([{ [name]: val }], {
+                        duration: 1000,
+                        iterations: 1,
+                      }).onfinish = () => (cardRef.style[name] = "");
+                    }
+                  });
                 }
               });
 
