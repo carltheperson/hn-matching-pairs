@@ -90,8 +90,8 @@ body {
   position: fixed;
   top: 0;
   &.on {
-    background-color: #0000002b;
-    backdrop-filter: blur(1px);
+    background-color: #0000001c;
+    backdrop-filter: blur(0.8px);
     cursor: pointer;
   }
   &:not(.on) {

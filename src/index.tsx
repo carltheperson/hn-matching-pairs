@@ -5,6 +5,7 @@ import {
   createSignal,
   For,
   Index,
+  onCleanup,
 } from "solid-js";
 import { Portal, render } from "solid-js/web";
 import { fetchData } from "./fetch-data";
@@ -77,12 +78,29 @@ function Main() {
     }
   });
 
-  function displayMatch() {
-    const cards_ = cards();
-    const i1 = 0;
-    const i2 = 7;
-    const card1 = cards_[i1];
-    const card2 = cards_[i2];
+  createComputed(() => {
+    const oldMatches = matches();
+    onCleanup(() => {
+      oldMatches?.forEach(({ cardIndex }) => {
+        cards()[cardIndex].elRef.parentElement.animate([{ opacity: "0" }], {
+          duration: 500,
+          fill: "forwards",
+        }).onfinish = () => {
+          setCards((cards) => {
+            cards[cardIndex] = {
+              ...cards[cardIndex],
+              flipped: false,
+            };
+            return [...cards];
+          });
+        };
+      });
+    });
+  });
+
+  function displayMatch(i1: number, i2: number) {
+    const card1 = cards()[i1];
+    const card2 = cards()[i2];
     const { x: x1 } = card1.elRef.getBoundingClientRect();
     const { x: x2 } = card2.elRef.getBoundingClientRect();
     setMatches(
@@ -92,8 +110,10 @@ function Main() {
     );
   }
 
-  setTimeout(() => displayMatch(), 1000);
-  // setTimeout(() => setCards([]), 3000);
+  setTimeout(() => displayMatch(3, 7), 1000);
+  setTimeout(() => setMatches(undefined), 3000);
+  setTimeout(() => displayMatch(1, 10), 6000);
+  setTimeout(() => setMatches(undefined), 10000);
 
   // const [data] = createResource(fetchData);
 
@@ -221,13 +241,14 @@ function clearWindowOverlfowAnimations(cardRef: HTMLElement) {
   });
 }
 
-const MATCH_CENTER_DISTANCE = 10;
-
 function matchAnimation(
   cardRef: HTMLElement,
   innerRef: HTMLElement,
   matchI: number
 ) {
+  let observer: ResizeObserver;
+  onCleanup(() => observer?.disconnect());
+
   let first = true;
   const getTopAndLeft = () => {
     const { top: top_, left: left_ } = getComputedStyle(cardRef);
@@ -254,13 +275,16 @@ function matchAnimation(
     const yDiff = cardY - targetY;
     const newTop = top - yDiff;
 
+    const center_distance =
+      window.innerWidth < 1600 ? window.innerWidth * 0.0225 : 10;
+
     // Calculating left
     const center = window.innerWidth / 2;
     let xDiff = innerX - (cardWidth - innerWidth) / 2 - center;
     if (matchI == 0) {
-      xDiff += +innerWidth * 2 + MATCH_CENTER_DISTANCE;
+      xDiff += +innerWidth * 2 + center_distance;
     } else if (matchI == 1) {
-      xDiff -= MATCH_CENTER_DISTANCE;
+      xDiff -= center_distance;
     }
     const newLeft = left - xDiff;
 
@@ -274,12 +298,12 @@ function matchAnimation(
     const { top, left } = getTopAndLeft();
     cardRef.style.top = top;
     cardRef.style.left = left;
-    const resizeObserver = new ResizeObserver((entries) => {
+    observer = new ResizeObserver((entries) => {
       const { top, left } = getTopAndLeft();
       cardRef.style.top = top;
       cardRef.style.left = left;
     });
-    resizeObserver.observe(document.body);
+    observer.observe(document.body);
   };
 }
 
