@@ -6,7 +6,7 @@ import {
   For,
   Index,
 } from "solid-js";
-import { render } from "solid-js/web";
+import { Portal, render } from "solid-js/web";
 import { fetchData } from "./fetch-data";
 
 /*
@@ -80,7 +80,7 @@ function Main() {
   function displayMatch() {
     const cards_ = cards();
     const i1 = 0;
-    const i2 = 10;
+    const i2 = 7;
     const card1 = cards_[i1];
     const card2 = cards_[i2];
     const { x: x1 } = card1.elRef.getBoundingClientRect();
@@ -93,6 +93,7 @@ function Main() {
   }
 
   setTimeout(() => displayMatch(), 1000);
+  // setTimeout(() => setCards([]), 3000);
 
   // const [data] = createResource(fetchData);
 
@@ -101,16 +102,31 @@ function Main() {
   let cardsRef: HTMLDivElement;
   return (
     <div>
+      <Portal>
+        <div
+          class="overlay"
+          classList={{ on: cards().some(({ flipped }) => flipped) }}
+        ></div>
+      </Portal>
       <h1 class="title">
         <span>HN</span> Matching Pairs
       </h1>
       <div
         class="cards-outer"
-        onmousemove={(e) =>
-          cardsRef.classList[getInnerElementFromEvent(e) ? "add" : "remove"](
-            "pointer"
-          )
-        }
+        onmousemove={(
+          e: MouseEvent & {
+            sourceCapabilities?: { firesTouchEvents?: boolean };
+          }
+        ) => {
+          if (
+            !e?.sourceCapabilities?.firesTouchEvents &&
+            getInnerElementFromEvent(e)
+          ) {
+            document.body.style.cursor = "pointer";
+          } else {
+            document.body.style.cursor = "";
+          }
+        }}
       >
         <div class="cards" ref={cardsRef}>
           <Index each={cards()}>
@@ -252,7 +268,7 @@ function matchAnimation(
   };
 
   cardRef.animate([getTopAndLeft()], {
-    duration: 900,
+    duration: 1000,
     iterations: 1,
   }).onfinish = () => {
     const { top, left } = getTopAndLeft();
