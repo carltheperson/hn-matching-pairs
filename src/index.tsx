@@ -58,6 +58,42 @@ function Main() {
       () => ({ flipped: false } as { flipped: boolean; elRef?: HTMLDivElement })
     )
   );
+  const [matches, setMatches] =
+    createSignal<[{ cardIndex: number }, { cardIndex: number }]>();
+
+  createComputed(() => {
+    if (matches()?.length) {
+      setCards((cards) => {
+        cards[matches()[0].cardIndex] = {
+          ...cards[matches()[0].cardIndex],
+          flipped: true,
+        };
+        cards[matches()[1].cardIndex] = {
+          ...cards[matches()[1].cardIndex],
+          flipped: true,
+        };
+        return [...cards];
+      });
+    }
+  });
+
+  function displayMatch() {
+    const cards_ = cards();
+    const i1 = 0;
+    const i2 = 10;
+    const card1 = cards_[i1];
+    const card2 = cards_[i2];
+    const { x: x1 } = card1.elRef.getBoundingClientRect();
+    const { x: x2 } = card2.elRef.getBoundingClientRect();
+    setMatches(
+      x1 < x2
+        ? [{ cardIndex: i1 }, { cardIndex: i2 }]
+        : [{ cardIndex: i2 }, { cardIndex: i1 }]
+    );
+  }
+
+  setTimeout(() => displayMatch(), 1000);
+
   // const [data] = createResource(fetchData);
 
   // Todo:
@@ -78,48 +114,25 @@ function Main() {
       >
         <div class="cards" ref={cardsRef}>
           <Index each={cards()}>
-            {(data) => {
+            {(data, i) => {
               let cardRef: HTMLDivElement;
 
               createEffect(() => {
-                if (data().flipped) {
-                  SIDES.forEach(
-                    ({
-                      coordVal,
-                      modifyWithCurrent,
-                      name,
-                      overflow,
-                      prefix,
-                    }) => {
-                      const rec = cardRef.getBoundingClientRect();
-                      const coordVal_ = coordVal(rec);
-                      const overflow_ = overflow(coordVal_);
-                      if (overflow_ > 0) {
-                        const current = parseInt(
-                          getNonInlineStyle(cardRef, name)
-                        );
-                        const final = modifyWithCurrent(current, overflow_) + 5;
-                        const newVal = prefix + final + "px";
-                        if (name === "right") {
-                          console.log("", newVal);
-                        }
-                        cardRef.animate([{ [name]: newVal }], {
-                          duration: 1000,
-                          iterations: 1,
-                        }).onfinish = () => (cardRef.style[name] = newVal);
-                      }
-                    }
-                  );
-                } else {
-                  SIDES.forEach(({ name }) => {
-                    if (cardRef.style[name]) {
-                      const val = getNonInlineStyle(cardRef, name);
-                      cardRef.animate([{ [name]: val }], {
-                        duration: 1000,
-                        iterations: 1,
-                      }).onfinish = () => (cardRef.style[name] = "");
-                    }
-                  });
+                if (!matches()?.some((m) => m.cardIndex == i)) {
+                  if (data().flipped) {
+                    preventWindowOverflowAnimations(cardRef);
+                  } else {
+                    clearWindowOverlfowAnimations(cardRef);
+                  }
+                }
+              });
+
+              createEffect(() => {
+                const matchIndex = matches()?.findIndex(
+                  (m) => m.cardIndex == i
+                );
+                if (matchIndex !== undefined && matchIndex !== -1) {
+                  matchAnimation(cardRef, data().elRef, matchIndex);
                 }
               });
 
@@ -163,9 +176,112 @@ function Main() {
   );
 }
 
+function preventWindowOverflowAnimations(cardRef: HTMLElement) {
+  SIDES.forEach(({ coordVal, modifyWithCurrent, name, overflow, prefix }) => {
+    const rec = cardRef.getBoundingClientRect();
+    const coordVal_ = coordVal(rec);
+    const overflow_ = overflow(coordVal_);
+    if (overflow_ > 0) {
+      const current = parseInt(getNonInlineStyle(cardRef, name));
+      const final = modifyWithCurrent(current, overflow_) + 5;
+      const newVal = prefix + final + "px";
+      cardRef.animate([{ [name]: newVal }], {
+        duration: 1000,
+        iterations: 1,
+      }).onfinish = () => (cardRef.style[name] = newVal);
+    }
+  });
+}
+
+function clearWindowOverlfowAnimations(cardRef: HTMLElement) {
+  SIDES.forEach(({ name }) => {
+    if (cardRef.style[name]) {
+      const val = getNonInlineStyle(cardRef, name);
+      cardRef.animate([{ [name]: val }], {
+        duration: 1000,
+        iterations: 1,
+      }).onfinish = () => (cardRef.style[name] = "");
+    }
+  });
+}
+
+const MATCH_CENTER_DISTANCE = 10;
+
+function matchAnimation(
+  cardRef: HTMLElement,
+  innerRef: HTMLElement,
+  matchI: number
+) {
+  let first = true;
+  const getTopAndLeft = () => {
+    const { top: top_, left: left_ } = getComputedStyle(cardRef);
+    let top = parseFloat(top_);
+    const left = parseFloat(left_);
+    let { width: cardWidth, height: cardHeight } =
+      cardRef.getBoundingClientRect();
+    let { width: innerWidth } = innerRef.getBoundingClientRect();
+    const { x: innerX } = innerRef.getBoundingClientRect();
+    const { y: cardY } = cardRef.getBoundingClientRect();
+
+    // After the animation has ran for the first time, the cards have been scaled up
+    // This is to ensure consistency in the calculations
+    if (!first) {
+      cardWidth *= 0.5;
+      innerWidth *= 0.5;
+    }
+    first = false;
+
+    // Calculating top
+    const { y: containerY, height: containerHeight } =
+      cardRef.parentElement.getBoundingClientRect();
+    const targetY = containerHeight / 2 - cardHeight / 2 + containerY;
+    const yDiff = cardY - targetY;
+    const newTop = top - yDiff;
+
+    // Calculating left
+    const center = window.innerWidth / 2;
+    let xDiff = innerX - (cardWidth - innerWidth) / 2 - center;
+    if (matchI == 0) {
+      xDiff += +innerWidth * 2 + MATCH_CENTER_DISTANCE;
+    } else if (matchI == 1) {
+      xDiff -= MATCH_CENTER_DISTANCE;
+    }
+    const newLeft = left - xDiff;
+
+    return { top: `${newTop}px`, left: `${newLeft}px` };
+  };
+
+  cardRef.animate([getTopAndLeft()], {
+    duration: 900,
+    iterations: 1,
+  }).onfinish = () => {
+    const { top, left } = getTopAndLeft();
+    cardRef.style.top = top;
+    cardRef.style.left = left;
+    const resizeObserver = new ResizeObserver((entries) => {
+      const { top, left } = getTopAndLeft();
+      cardRef.style.top = top;
+      cardRef.style.left = left;
+    });
+    resizeObserver.observe(document.body);
+  };
+}
+
 const root = document.querySelector("#root");
 render(() => <Main />, root);
 const children = Array.from(root.children);
 if (children.length === 2) {
   children[0].remove();
 }
+
+// Current top -98.9997
+// Current Y 154.7109375
+// Want to reach 400
+// Y-reach-differ -245.2890625
+// New top 146.28936249999998px
+
+// Current top -98.9997
+// Current Y 53.939353942871094
+// Want to reach 400
+// Y-reach-differ-346.0606460571289
+// New top 247.0609460571289px

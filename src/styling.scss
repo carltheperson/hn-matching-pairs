@@ -130,7 +130,6 @@ body {
           position: relative;
           perspective: 500px;
           .inner {
-            position: absolute;
             width: 100%;
             height: 100%;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
@@ -153,7 +152,7 @@ body {
             background-color: white;
             color: black;
             transform: rotateY(180deg);
-            border: #ef7d4464 solid 1.5px;
+            // border: #ef7d4464 solid 1.5px;
           }
 
           .front {
