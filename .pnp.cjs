@@ -30,7 +30,9 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["@babel/core", "npm:7.20.2"],\
             ["@parcel/transformer-sass", "npm:2.8.0"],\
+            ["@types/canvas-confetti", "npm:1.6.0"],\
             ["babel-preset-solid", "virtual:67bccc7d0bcfa1230f52b04f252953235f3247e8df364142a4b7724e7369b822323dc3148cf3825512a8c0b70e04e7501cbd67f5ac8193999d7bc7a9f219cccb#npm:1.6.2"],\
+            ["canvas-confetti", "npm:1.6.0"],\
             ["parcel", "virtual:67bccc7d0bcfa1230f52b04f252953235f3247e8df364142a4b7724e7369b822323dc3148cf3825512a8c0b70e04e7501cbd67f5ac8193999d7bc7a9f219cccb#npm:2.8.0"],\
             ["solid-js", "npm:1.6.2"],\
             ["typescript", "patch:typescript@npm%3A4.8.4#~builtin<compat/typescript>::version=4.8.4&hash=701156"]\
@@ -1511,6 +1513,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["@types/canvas-confetti", [\
+        ["npm:1.6.0", {\
+          "packageLocation": "./.yarn/cache/@types-canvas-confetti-npm-1.6.0-f81e670b3e-e1bd2bc81e.zip/node_modules/@types/canvas-confetti/",\
+          "packageDependencies": [\
+            ["@types/canvas-confetti", "npm:1.6.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["@types/parse-json", [\
         ["npm:4.0.0", {\
           "packageLocation": "./.yarn/cache/@types-parse-json-npm-4.0.0-298522afa6-fd6bce2b67.zip/node_modules/@types/parse-json/",\
@@ -1820,6 +1831,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["canvas-confetti", [\
+        ["npm:1.6.0", {\
+          "packageLocation": "./.yarn/cache/canvas-confetti-npm-1.6.0-6705a317f0-be19e3be73.zip/node_modules/canvas-confetti/",\
+          "packageDependencies": [\
+            ["canvas-confetti", "npm:1.6.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["chalk", [\
         ["npm:2.4.2", {\
           "packageLocation": "./.yarn/cache/chalk-npm-2.4.2-3ea16dd91e-ec3661d38f.zip/node_modules/chalk/",\
@@ -1892,7 +1912,9 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["client", "workspace:."],\
             ["@babel/core", "npm:7.20.2"],\
             ["@parcel/transformer-sass", "npm:2.8.0"],\
+            ["@types/canvas-confetti", "npm:1.6.0"],\
             ["babel-preset-solid", "virtual:67bccc7d0bcfa1230f52b04f252953235f3247e8df364142a4b7724e7369b822323dc3148cf3825512a8c0b70e04e7501cbd67f5ac8193999d7bc7a9f219cccb#npm:1.6.2"],\
+            ["canvas-confetti", "npm:1.6.0"],\
             ["parcel", "virtual:67bccc7d0bcfa1230f52b04f252953235f3247e8df364142a4b7724e7369b822323dc3148cf3825512a8c0b70e04e7501cbd67f5ac8193999d7bc7a9f219cccb#npm:2.8.0"],\
             ["solid-js", "npm:1.6.2"],\
             ["typescript", "patch:typescript@npm%3A4.8.4#~builtin<compat/typescript>::version=4.8.4&hash=701156"]\

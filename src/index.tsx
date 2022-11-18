@@ -1,6 +1,9 @@
 import {
+  Accessor,
   createComputed,
   createEffect,
+  createMemo,
+  createRenderEffect,
   createResource,
   createSignal,
   For,
@@ -9,6 +12,7 @@ import {
 } from "solid-js";
 import { Portal, render } from "solid-js/web";
 import { fetchData } from "./fetch-data";
+import confetti from "canvas-confetti";
 
 /*
  */
@@ -99,9 +103,8 @@ function Main() {
   createComputed(() => {
     const oldMatches = matches();
     onCleanup(() => {
-      const isMatch = Math.random() > 0.5;
       oldMatches?.forEach(({ cardIndex }) => {
-        if (isMatch) {
+        if (isMatch(oldMatches)) {
           animate(cards()[cardIndex].elRef.parentElement, [{ opacity: "0" }], {
             duration: 500,
             fill: "forwards",
@@ -226,6 +229,7 @@ function Main() {
         }}
       >
         <div class="cards" ref={cardsRef}>
+          <MatchPromt matches={matches} />
           <Index each={cards()}>
             {(data, i) => {
               let cardRef: HTMLDivElement;
@@ -274,6 +278,59 @@ function Main() {
           </Index>
         </div>
       </div>
+    </div>
+  );
+}
+
+function MatchPromt({
+  matches,
+}: {
+  matches: Accessor<
+    [
+      {
+        cardIndex: number;
+      },
+      {
+        cardIndex: number;
+      }
+    ]
+  >;
+}) {
+  let lastIsMatch_ = false;
+  const isMatch_ = createMemo(() => {
+    if (matches() === undefined) {
+      return lastIsMatch_;
+    } else if (isMatch(matches())) {
+      lastIsMatch_ = true;
+    } else {
+      lastIsMatch_ = false;
+    }
+    return lastIsMatch_;
+  });
+
+  createComputed(() => {
+    if (matches() !== undefined && isMatch_()) {
+      setTimeout(() => {
+        console.log("Calling it now");
+        confetti();
+      }, 500);
+    }
+  });
+
+  return (
+    <div
+      class="match-prompt"
+      classList={{
+        on: matches() !== undefined,
+      }}
+    >
+      <h1
+        classList={{
+          ["is-match"]: isMatch_(),
+        }}
+      >
+        {isMatch_() ? "It's a match!" : "Not a match"}
+      </h1>
     </div>
   );
 }
@@ -371,6 +428,10 @@ function matchAnimation(
     });
     observer.observe(document.body);
   };
+}
+
+function isMatch(matches?: [{ cardIndex: number }, { cardIndex: number }]) {
+  return (matches?.[0].cardIndex || 0 + matches?.[1].cardIndex || 0) > 4;
 }
 
 const root = document.querySelector("#root");

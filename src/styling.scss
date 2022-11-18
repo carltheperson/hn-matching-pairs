@@ -94,8 +94,38 @@ body {
     background-color: #0000001c;
     backdrop-filter: blur(0.8px);
   }
+  pointer-events: none;
+  &:not(.on) {
+  }
+}
+
+.match-prompt {
+  transition: opacity 1s;
+  position: absolute;
+  z-index: 1000;
+  width: 100%;
+  text-align: center;
+  @media (min-width: 1600px) {
+    top: -80px;
+  }
+  @media screen and (min-width: 0px) and (max-width: 1600px) {
+    top: 40px;
+  }
+  &.on {
+    opacity: 1;
+  }
+
+  h1.is-match {
+    color: green;
+  }
+  h1:not(.is-match) {
+    color: darkred;
+  }
+
   &:not(.on) {
     pointer-events: none;
+    opacity: 0;
+    transition-delay: 0;
   }
 }
 
