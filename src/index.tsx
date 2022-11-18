@@ -32,6 +32,21 @@ const SIDES = [
   },
 ];
 
+let animationDone = 0;
+
+function animate(
+  el: HTMLElement,
+  ...args: Parameters<typeof document.body.animate>
+) {
+  animationDone =
+    +new Date() + (args[1] as { duration?: number }).duration || 0;
+  return el.animate(...args);
+}
+
+function isAnimationDone() {
+  return +new Date() > animationDone;
+}
+
 export const POST_COUNT = 10;
 
 function getInnerElementFromEvent(e: MouseEvent) {
@@ -62,6 +77,8 @@ function Main() {
   const [matches, setMatches] =
     createSignal<[{ cardIndex: number }, { cardIndex: number }]>();
 
+  const [selected, setSelected] = createSignal<number>();
+
   createComputed(() => {
     if (matches()?.length) {
       setCards((cards) => {
@@ -78,14 +95,34 @@ function Main() {
     }
   });
 
+  // Cleaning up matches
   createComputed(() => {
     const oldMatches = matches();
     onCleanup(() => {
+      const isMatch = Math.random() > 0.5;
       oldMatches?.forEach(({ cardIndex }) => {
-        cards()[cardIndex].elRef.parentElement.animate([{ opacity: "0" }], {
-          duration: 500,
-          fill: "forwards",
-        }).onfinish = () => {
+        if (isMatch) {
+          animate(cards()[cardIndex].elRef.parentElement, [{ opacity: "0" }], {
+            duration: 500,
+            fill: "forwards",
+          }).onfinish = () => {
+            setCards((cards) => {
+              cards[cardIndex] = {
+                ...cards[cardIndex],
+                flipped: false,
+              };
+              cards[cardIndex].elRef.remove();
+              return [...cards];
+            });
+          };
+        } else {
+          const el = cards()[cardIndex].elRef.parentElement.parentElement;
+          const top = getNonInlineStyle(el, "top");
+          const left = getNonInlineStyle(el, "left");
+          animate(el, [{ top, left }], { duration: 750 }).onfinish = () => {
+            el.style.top = "";
+            el.style.left = "";
+          };
           setCards((cards) => {
             cards[cardIndex] = {
               ...cards[cardIndex],
@@ -93,12 +130,12 @@ function Main() {
             };
             return [...cards];
           });
-        };
+        }
       });
     });
   });
 
-  function displayMatch(i1: number, i2: number) {
+  function setMatchesInCorrectOrder(i1: number, i2: number) {
     const card1 = cards()[i1];
     const card2 = cards()[i2];
     const { x: x1 } = card1.elRef.getBoundingClientRect();
@@ -110,22 +147,62 @@ function Main() {
     );
   }
 
-  setTimeout(() => displayMatch(3, 7), 1000);
-  setTimeout(() => setMatches(undefined), 3000);
-  setTimeout(() => displayMatch(1, 10), 6000);
-  setTimeout(() => setMatches(undefined), 10000);
-
   // const [data] = createResource(fetchData);
 
-  // Todo:
-  // Solid: Find a good data structure to store a map
+  function handleClick(e: MouseEvent) {
+    if (!isAnimationDone()) {
+      return;
+    }
+
+    // A match is displayed
+    if (matches()?.length) {
+      setMatches(undefined);
+      return;
+    }
+
+    // One card is flipped
+    const flippedCardI = cards().findIndex((c) => c.flipped);
+    if (flippedCardI !== -1) {
+      setCards((cards) => {
+        cards[flippedCardI] = {
+          ...cards[flippedCardI],
+          flipped: false,
+        };
+        return [...cards];
+      });
+      setSelected(flippedCardI);
+      return;
+    }
+
+    // The user clicked a non-flipped card
+    const inner = getInnerElementFromEvent(e);
+    if (inner) {
+      const i = cards().findIndex((card) => card.elRef === inner);
+
+      if (selected() === undefined) {
+        setCards((cards) => {
+          cards[i] = {
+            ...cards[i],
+            flipped: !cards[i].flipped,
+          };
+          return [...cards];
+        });
+      } else if (i !== selected()) {
+        setMatchesInCorrectOrder(i, selected());
+        setSelected(undefined);
+      }
+    }
+  }
+
   let cardsRef: HTMLDivElement;
+
   return (
     <div>
       <Portal>
         <div
           class="overlay"
           classList={{ on: cards().some(({ flipped }) => flipped) }}
+          onClick={handleClick}
         ></div>
       </Portal>
       <h1 class="title">
@@ -157,8 +234,7 @@ function Main() {
                 if (!matches()?.some((m) => m.cardIndex == i)) {
                   if (data().flipped) {
                     preventWindowOverflowAnimations(cardRef);
-                  } else {
-                    clearWindowOverlfowAnimations(cardRef);
+                    onCleanup(() => clearWindowOverlfowAnimations(cardRef));
                   }
                 }
               });
@@ -173,28 +249,18 @@ function Main() {
               });
 
               return (
-                <div
-                  class="card-outer"
-                  ref={cardRef}
-                  onClick={(e) => {
-                    const inner = getInnerElementFromEvent(e);
-                    if (inner) {
-                      const i = cards().findIndex(
-                        (card) => card.elRef === inner
-                      );
-                      setCards((cards) => {
-                        cards[i] = {
-                          ...cards[i],
-                          flipped: !cards[i].flipped,
-                        };
-                        return [...cards];
-                      });
-                    }
-                  }}
-                >
-                  <div class="card" classList={{ flipped: data().flipped }}>
+                <div class="card-outer" ref={cardRef} onClick={handleClick}>
+                  <div
+                    class="card"
+                    classList={{
+                      flipped: data().flipped,
+                    }}
+                  >
                     <div class="inner" ref={data().elRef}>
-                      <div class="front"></div>
+                      <div
+                        class="front"
+                        classList={{ selected: selected() == i }}
+                      ></div>
                       <div class="back">
                         A whole buuunch of text here Lorem ipsum dolor sit amet
                         consectetur adipisicing elit. Lorem ipsum dolor sit
@@ -221,7 +287,7 @@ function preventWindowOverflowAnimations(cardRef: HTMLElement) {
       const current = parseInt(getNonInlineStyle(cardRef, name));
       const final = modifyWithCurrent(current, overflow_) + 5;
       const newVal = prefix + final + "px";
-      cardRef.animate([{ [name]: newVal }], {
+      animate(cardRef, [{ [name]: newVal }], {
         duration: 1000,
         iterations: 1,
       }).onfinish = () => (cardRef.style[name] = newVal);
@@ -233,7 +299,7 @@ function clearWindowOverlfowAnimations(cardRef: HTMLElement) {
   SIDES.forEach(({ name }) => {
     if (cardRef.style[name]) {
       const val = getNonInlineStyle(cardRef, name);
-      cardRef.animate([{ [name]: val }], {
+      animate(cardRef, [{ [name]: val }], {
         duration: 1000,
         iterations: 1,
       }).onfinish = () => (cardRef.style[name] = "");
@@ -291,7 +357,7 @@ function matchAnimation(
     return { top: `${newTop}px`, left: `${newLeft}px` };
   };
 
-  cardRef.animate([getTopAndLeft()], {
+  animate(cardRef, [getTopAndLeft()], {
     duration: 1000,
     iterations: 1,
   }).onfinish = () => {

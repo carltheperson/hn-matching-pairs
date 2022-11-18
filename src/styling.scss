@@ -34,6 +34,7 @@ body {
 
 #root {
   overflow-y: scroll;
+  overflow-x: hidden;
   min-height: 100vh;
 
   > div {
@@ -92,7 +93,6 @@ body {
   &.on {
     background-color: #0000001c;
     backdrop-filter: blur(0.8px);
-    cursor: pointer;
   }
   &:not(.on) {
     pointer-events: none;
@@ -169,7 +169,6 @@ body {
             background-color: white;
             color: black;
             transform: rotateY(180deg);
-            // border: #ef7d4464 solid 1.5px;
           }
 
           .front {
@@ -182,6 +181,11 @@ body {
               top: 50%;
               left: 50%;
               transform: translateY(-50%) translateX(-50%);
+            }
+            transition: outline-color 0.2s;
+            outline: 9px solid rgba(0, 0, 0, 0);
+            &.selected {
+              outline: 7px solid #383838;
             }
           }
 
