@@ -2,7 +2,8 @@
   "name": "client",
   "packageManager": "yarn@3.2.4",
   "scripts": {
-    "serve": "yarn parcel src/index.html"
+    "serve": "yarn parcel src/index.html",
+    "build": "yarn parcel build src/index.html"
   },
   "devDependencies": {
     "@babel/core": "^7.12.0",
