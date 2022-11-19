@@ -116,6 +116,7 @@ body {
 }
 
 .match-prompt {
+  font-family: Futura, Trebuchet MS, Arial, sans-serif;
   transition: opacity 1s;
   position: absolute;
   z-index: 1000;
@@ -132,7 +133,14 @@ body {
   }
 
   h1.is-match {
-    color: green;
+    color: rgb(0, 171, 57);
+    color: #41d53f;
+    text-transform: uppercase;
+    animation-name: pulse;
+    animation-duration: 6s;
+    animation-iteration-count: infinite;
+    -webkit-text-stroke-width: 1.5px;
+    -webkit-text-stroke-color: #00000094;
   }
   h1:not(.is-match) {
     color: darkred;
@@ -142,6 +150,18 @@ body {
     pointer-events: none;
     opacity: 0;
     transition-delay: 0;
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(0.9);
+    }
+    50% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(0.9);
+    }
   }
 }
 
