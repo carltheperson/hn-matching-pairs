@@ -203,6 +203,13 @@ body {
   }
 }
 
+.tip-promt {
+  position: absolute;
+  bottom: -30px;
+  text-shadow: 0 0 15px rgba(0, 0, 0, 0.361);
+  font-size: 0.9rem;
+}
+
 #root > div {
   display: flex;
   justify-content: center;

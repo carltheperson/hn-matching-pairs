@@ -10,6 +10,7 @@ import {
   Index,
   onCleanup,
   Resource,
+  Show,
 } from "solid-js";
 import { Portal, render } from "solid-js/web";
 import { fetchData } from "./fetch-data";
@@ -21,8 +22,9 @@ Things left:
 [x] Register flip animation to block user
 [x] Nicer not a match text
 [x] End screen
-[ ] Tip thing
+[x] Tip thing
 [ ] Non mock cards
+[ ] Link to post
 [ ] Better component structure
 [ ] Scrolling thing
 [ ] Starting animation
@@ -301,6 +303,7 @@ function Main() {
                       flipped: data().flipped || data().outOfGame,
                     }}
                   >
+                    <TipPromt card={data} />
                     <div class="inner" ref={data().elRef}>
                       <div
                         class="front"
@@ -389,6 +392,20 @@ function EndPromt({ cards }: { cards: Resource<Card[]> }) {
         <div class="small">(refresh to try again)</div>
       </div>
     </div>
+  );
+}
+
+function TipPromt({ card }: { card: Accessor<Card> }) {
+  return (
+    <Show when={card().flipped}>
+      {() => {
+        if (localStorage["shown-tip"]) {
+          return;
+        }
+        localStorage["shown-tip"] = "1";
+        return <div class="tip-promt">Tip: Click anywhere to close card</div>;
+      }}
+    </Show>
   );
 }
 
