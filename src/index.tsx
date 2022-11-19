@@ -153,6 +153,8 @@ function Main() {
   // const [data] = createResource(fetchData);
 
   function handleClick(e: MouseEvent) {
+    console.log("That was a click");
+
     if (!isAnimationDone()) {
       return;
     }
@@ -200,12 +202,11 @@ function Main() {
   let cardsRef: HTMLDivElement;
 
   return (
-    <div>
+    <div onClick={handleClick}>
       <Portal>
         <div
           class="overlay"
           classList={{ on: cards().some(({ flipped }) => flipped) }}
-          onClick={handleClick}
         ></div>
       </Portal>
       <h1 class="title">
@@ -253,7 +254,7 @@ function Main() {
               });
 
               return (
-                <div class="card-outer" ref={cardRef} onClick={handleClick}>
+                <div class="card-outer" ref={cardRef}>
                   <div
                     class="card"
                     classList={{
@@ -311,7 +312,6 @@ function MatchPromt({
   createComputed(() => {
     if (matches() !== undefined && isMatch_()) {
       setTimeout(() => {
-        console.log("Calling it now");
         confetti();
       }, 500);
     }
