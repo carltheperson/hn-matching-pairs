@@ -9,13 +9,30 @@ import {
   For,
   Index,
   onCleanup,
+  Resource,
 } from "solid-js";
 import { Portal, render } from "solid-js/web";
 import { fetchData } from "./fetch-data";
 import confetti from "canvas-confetti";
 
 /*
+Things left:
+[x] Make it so that you can click trough the overlay early
+[x] Register flip animation to block user
+[x] Nicer not a match text
+[x] End screen
+[ ] Tip thing
+[ ] Non mock cards
+[ ] Better component structure
+[ ] Scrolling thing
+[ ] Starting animation
  */
+
+interface Card {
+  flipped: boolean;
+  outOfGame: boolean;
+  elRef?: HTMLDivElement;
+}
 
 const SIDES = [
   {
@@ -37,18 +54,29 @@ const SIDES = [
 ];
 
 let animationDone = 0;
+let animationBlocking = false;
 
 function animate(
   el: HTMLElement,
-  ...args: Parameters<typeof document.body.animate>
+  keyframes: Parameters<typeof document.body.animate>[0],
+  options: KeyframeAnimationOptions & { blocking: boolean }
 ) {
-  animationDone =
-    +new Date() + (args[1] as { duration?: number }).duration || 0;
-  return el.animate(...args);
+  registerAnimation(options);
+  return el.animate(keyframes, options);
 }
 
-function isAnimationDone() {
-  return +new Date() > animationDone;
+function registerAnimation(
+  options: KeyframeAnimationOptions & { blocking: boolean }
+) {
+  animationBlocking = options.blocking;
+  animationDone = +new Date() + (options.duration as number) || 0;
+}
+
+function isAnimationBlocking() {
+  if (!animationBlocking) {
+    return false;
+  }
+  return +new Date() < animationDone;
 }
 
 export const POST_COUNT = 10;
@@ -68,16 +96,16 @@ function getNonInlineStyle(el: HTMLElement, key: string) {
 }
 
 function Main() {
-  // const [cards, { mutate: setCards }] = createResource(() =>
+  const [cards, { mutate: setCards }] = createResource(() =>
+    Array.from({ length: 16 }).map(
+      () => ({ flipped: false, outOfGame: false } as Card)
+    )
+  );
+  // const [cards, setCards] = createSignal(
   //   Array.from({ length: 16 }).map(
   //     () => ({ flipped: false } as { flipped: boolean; elRef?: HTMLDivElement })
   //   )
   // );
-  const [cards, setCards] = createSignal(
-    Array.from({ length: 16 }).map(
-      () => ({ flipped: false } as { flipped: boolean; elRef?: HTMLDivElement })
-    )
-  );
   const [matches, setMatches] =
     createSignal<[{ cardIndex: number }, { cardIndex: number }]>();
 
@@ -107,22 +135,24 @@ function Main() {
         if (isMatch(oldMatches)) {
           animate(cards()[cardIndex].elRef.parentElement, [{ opacity: "0" }], {
             duration: 500,
-            fill: "forwards",
-          }).onfinish = () => {
-            setCards((cards) => {
-              cards[cardIndex] = {
-                ...cards[cardIndex],
-                flipped: false,
-              };
-              cards[cardIndex].elRef.remove();
-              return [...cards];
-            });
-          };
+            blocking: false,
+          }).onfinish = () => cards()[cardIndex].elRef.remove();
+          setCards((cards) => {
+            cards[cardIndex] = {
+              ...cards[cardIndex],
+              flipped: false,
+              outOfGame: true,
+            };
+            return [...cards];
+          });
         } else {
           const el = cards()[cardIndex].elRef.parentElement.parentElement;
           const top = getNonInlineStyle(el, "top");
           const left = getNonInlineStyle(el, "left");
-          animate(el, [{ top, left }], { duration: 750 }).onfinish = () => {
+          animate(el, [{ top, left }], {
+            duration: 750,
+            blocking: false,
+          }).onfinish = () => {
             el.style.top = "";
             el.style.left = "";
           };
@@ -136,6 +166,14 @@ function Main() {
         }
       });
     });
+  });
+
+  // Flip animation
+  createEffect(() => {
+    if (cards().filter((c) => c.flipped).length === 1) {
+      // The flip animations are kept in CSS, but they should still block the user from doing stuff while they run
+      registerAnimation({ duration: 1000, blocking: true });
+    }
   });
 
   function setMatchesInCorrectOrder(i1: number, i2: number) {
@@ -153,15 +191,14 @@ function Main() {
   // const [data] = createResource(fetchData);
 
   function handleClick(e: MouseEvent) {
-    console.log("That was a click");
-
-    if (!isAnimationDone()) {
+    if (isAnimationBlocking()) {
       return;
     }
 
     // A match is displayed
     if (matches()?.length) {
       setMatches(undefined);
+      console.log("Returning here");
       return;
     }
 
@@ -231,10 +268,12 @@ function Main() {
       >
         <div class="cards" ref={cardsRef}>
           <MatchPromt matches={matches} />
+          <EndPromt cards={cards} />
           <Index each={cards()}>
             {(data, i) => {
               let cardRef: HTMLDivElement;
 
+              // Overflow animation
               createEffect(() => {
                 if (!matches()?.some((m) => m.cardIndex == i)) {
                   if (data().flipped) {
@@ -244,6 +283,7 @@ function Main() {
                 }
               });
 
+              // Match animation
               createEffect(() => {
                 const matchIndex = matches()?.findIndex(
                   (m) => m.cardIndex == i
@@ -258,7 +298,7 @@ function Main() {
                   <div
                     class="card"
                     classList={{
-                      flipped: data().flipped,
+                      flipped: data().flipped || data().outOfGame,
                     }}
                   >
                     <div class="inner" ref={data().elRef}>
@@ -335,6 +375,23 @@ function MatchPromt({
   );
 }
 
+function EndPromt({ cards }: { cards: Resource<Card[]> }) {
+  return (
+    <div
+      class="end-promt"
+      classList={{
+        on: cards().every((c) => c.outOfGame),
+      }}
+    >
+      <div class="text">
+        <div>Game Over</div>
+        <div>Well Done!</div>
+        <div class="small">(refresh to try again)</div>
+      </div>
+    </div>
+  );
+}
+
 function preventWindowOverflowAnimations(cardRef: HTMLElement) {
   SIDES.forEach(({ coordVal, modifyWithCurrent, name, overflow, prefix }) => {
     const rec = cardRef.getBoundingClientRect();
@@ -347,6 +404,7 @@ function preventWindowOverflowAnimations(cardRef: HTMLElement) {
       animate(cardRef, [{ [name]: newVal }], {
         duration: 1000,
         iterations: 1,
+        blocking: true,
       }).onfinish = () => (cardRef.style[name] = newVal);
     }
   });
@@ -359,6 +417,7 @@ function clearWindowOverlfowAnimations(cardRef: HTMLElement) {
       animate(cardRef, [{ [name]: val }], {
         duration: 1000,
         iterations: 1,
+        blocking: true,
       }).onfinish = () => (cardRef.style[name] = "");
     }
   });
@@ -417,6 +476,7 @@ function matchAnimation(
   animate(cardRef, [getTopAndLeft()], {
     duration: 1000,
     iterations: 1,
+    blocking: true,
   }).onfinish = () => {
     const { top, left } = getTopAndLeft();
     cardRef.style.top = top;
