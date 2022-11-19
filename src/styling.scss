@@ -5,6 +5,8 @@ $card-height-ratio: calc($card-height / $card-width);
 $card-flip-scale: 0.5;
 $card-flip-scale-reverse: calc(1 / $card-flip-scale);
 
+$card-border-radius: 5px;
+
 html {
   font-size: 14px;
   @media (min-width: 768px) {
@@ -40,6 +42,20 @@ body {
   > div {
     margin-bottom: -200px;
   }
+}
+
+@mixin safariFriendlyOutlineBorderRadius {
+  content: "";
+  position: absolute;
+  $thinkness: 7px;
+  $offset: 1px;
+  $thinkness-and-offset-inverse: calc(-1 * ($thinkness + $offset));
+  top: $thinkness-and-offset-inverse;
+  right: $thinkness-and-offset-inverse;
+  bottom: $thinkness-and-offset-inverse;
+  left: $thinkness-and-offset-inverse;
+  border: $thinkness solid rgb(62, 62, 62);
+  border-radius: calc($card-border-radius + $offset);
 }
 
 @mixin grid($rows-n, $cols-n) {
@@ -190,7 +206,7 @@ body {
             height: 100%;
             width: 100%;
             text-align: center;
-            border-radius: 5px;
+            border-radius: $card-border-radius;
             backface-visibility: hidden;
           }
 
@@ -214,8 +230,9 @@ body {
             }
             transition: outline-color 0.2s;
             outline: 9px solid rgba(0, 0, 0, 0);
+
             &.selected {
-              outline: 7px solid #383838;
+              @include safariFriendlyOutlineBorderRadius();
             }
           }
 
