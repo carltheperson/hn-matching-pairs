@@ -30,9 +30,19 @@ Things left:
 [ ] Starting animation
  */
 
-interface Card {
+// type CardData = Awaited<ReturnType<typeof fetchData>>[number] & {
+//   flipped?: boolean;
+//   outOfGame: boolean;
+//   elRef?: HTMLDivElement;
+// };
+
+export interface CardData {
+  type: "post" | "comment";
+  id: number;
+  matchingId: number;
+  text: string;
   flipped?: boolean;
-  outOfGame: boolean;
+  outOfGame?: boolean;
   elRef?: HTMLDivElement;
 }
 
@@ -81,7 +91,7 @@ function isAnimationBlocking() {
   return +new Date() < animationDone;
 }
 
-export const POST_COUNT = 10;
+export const POST_COUNT = 8;
 
 function getInnerElementFromEvent(e: MouseEvent) {
   const elements = document.elementsFromPoint(e.clientX, e.clientY);
@@ -99,25 +109,25 @@ function getNonInlineStyle(el: HTMLElement, key: string) {
 
 function Main() {
   const [cards, { mutate: setCards }] = createResource(
-    () =>
-      new Promise<Card[]>((r) =>
-        setTimeout(
-          () =>
-            r(
-              Array.from({ length: 16 }).map(
-                () => ({ outOfGame: false } as Card)
-              )
-            ),
-          2000
-        )
-      )
+    () => fetchData().then(getShuffledArr) as Promise<CardData[]>
+    // () =>
+    //   new Promise<Card[]>((r) =>
+    //     setTimeout(
+    //       () =>
+    //         r(
+    //           Array.from({ length: 16 }).map(
+    //             () => ({ outOfGame: false } as Card)
+    //           )
+    //         ),
+    //       2000
+    //     )
+    //   )
   );
 
   const [matches, setMatches] =
     createSignal<[{ cardIndex: number }, { cardIndex: number }]>();
 
   const [selected, setSelected] = createSignal<number>();
-  const [initialRender, setInitialRender] = createSignal(true);
 
   createComputed(() => {
     if (matches()?.length) {
@@ -140,7 +150,7 @@ function Main() {
     const oldMatches = matches();
     onCleanup(() => {
       oldMatches?.forEach(({ cardIndex }) => {
-        if (isMatch(oldMatches)) {
+        if (isMatch(oldMatches, cards())) {
           animate(cards()[cardIndex].elRef.parentElement, [{ opacity: "0" }], {
             duration: 500,
             blocking: false,
@@ -276,7 +286,7 @@ function Main() {
           }}
         >
           <div class="cards" ref={cardsRef}>
-            <MatchPromt matches={matches} />
+            <MatchPromt matches={matches} cards={cards} />
             <EndPromt cards={cards} />
             <Index each={cards()}>
               {(data, i) => {
@@ -318,10 +328,25 @@ function Main() {
                           classList={{ selected: selected() == i }}
                         ></div>
                         <div class="back">
-                          A whole buuunch of text here Lorem ipsum dolor sit
-                          amet consectetur adipisicing elit. Lorem ipsum dolor
-                          sit amet, consectetur adipisicing elit. Est dolorem
-                          earum
+                          <div class={"sub " + data().type}>
+                            <div class="type">
+                              <div class="icon">
+                                {data().type === "post" ? (
+                                  <PostIcon />
+                                ) : (
+                                  <CommentIcon />
+                                )}
+                              </div>
+
+                              {data().type}
+                            </div>
+                            {() => {
+                              let ref: HTMLDivElement;
+                              const back = <div class="text" ref={ref}></div>;
+                              ref.innerHTML = data().text;
+                              return back;
+                            }}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -336,8 +361,43 @@ function Main() {
   );
 }
 
+function PostIcon() {
+  return (
+    <svg
+      width="48"
+      height="48"
+      viewBox="0 0 48 48"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M9 42C8.16667 42 7.45833 41.7083 6.875 41.125C6.29167 40.5417 6 39.8333 6 39V9C6 8.16667 6.29167 7.45833 6.875 6.875C7.45833 6.29167 8.16667 6 9 6H39C39.8333 6 40.5417 6.29167 41.125 6.875C41.7083 7.45833 42 8.16667 42 9V39C42 39.8333 41.7083 40.5417 41.125 41.125C40.5417 41.7083 39.8333 42 39 42H9ZM9 39H39V13H9V39ZM14 23.5V20.5H33.5V23.5H14ZM14 31.5V28.5H25.5V31.5H14Z"
+        fill="black"
+      />
+    </svg>
+  );
+}
+
+function CommentIcon() {
+  return (
+    <svg
+      width="48"
+      height="48"
+      viewBox="0 0 48 48"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M12 28.05H27.65V25.05H12V28.05ZM12 21.55H36V18.55H12V21.55ZM12 15.05H36V12.05H12V15.05ZM4 44V7C4 6.23333 4.3 5.54167 4.9 4.925C5.5 4.30833 6.2 4 7 4H41C41.7667 4 42.4583 4.30833 43.075 4.925C43.6917 5.54167 44 6.23333 44 7V33C44 33.7667 43.6917 34.4583 43.075 35.075C42.4583 35.6917 41.7667 36 41 36H12L4 44ZM7 36.75L10.75 33H41V7H7V36.75ZM7 7V36.75V7Z"
+        fill="black"
+      />
+    </svg>
+  );
+}
+
 function MatchPromt({
   matches,
+  cards,
 }: {
   matches: Accessor<
     [
@@ -349,12 +409,13 @@ function MatchPromt({
       }
     ]
   >;
+  cards: Resource<CardData[]>;
 }) {
   let lastIsMatch_ = false;
   const isMatch_ = createMemo(() => {
     if (matches() === undefined) {
       return lastIsMatch_;
-    } else if (isMatch(matches())) {
+    } else if (isMatch(matches(), cards())) {
       lastIsMatch_ = true;
     } else {
       lastIsMatch_ = false;
@@ -388,7 +449,7 @@ function MatchPromt({
   );
 }
 
-function EndPromt({ cards }: { cards: Resource<Card[]> }) {
+function EndPromt({ cards }: { cards: Resource<CardData[]> }) {
   return (
     <div
       class="end-promt"
@@ -405,7 +466,7 @@ function EndPromt({ cards }: { cards: Resource<Card[]> }) {
   );
 }
 
-function TipPromt({ card }: { card: Accessor<Card> }) {
+function TipPromt({ card }: { card: Accessor<CardData> }) {
   return (
     <Show when={card().flipped}>
       {() => {
@@ -529,9 +590,26 @@ function matchAnimation(
 //   }, 100)
 // }
 
-function isMatch(matches?: [{ cardIndex: number }, { cardIndex: number }]) {
-  return (matches?.[0].cardIndex || 0 + matches?.[1].cardIndex || 0) > 4;
+function isMatch(
+  matches?: [{ cardIndex: number }, { cardIndex: number }],
+  cards?: CardData[]
+) {
+  if (!matches || !cards) {
+    return false;
+  }
+  return (
+    cards[matches[0].cardIndex].matchingId === cards[matches[1].cardIndex].id
+  );
 }
+
+const getShuffledArr = (arr) => {
+  const newArr = arr.slice();
+  for (let i = newArr.length - 1; i > 0; i--) {
+    const rand = Math.floor(Math.random() * (i + 1));
+    [newArr[i], newArr[rand]] = [newArr[rand], newArr[i]];
+  }
+  return newArr;
+};
 
 const root = document.querySelector("#root");
 render(() => <Main />, root);

@@ -1,9 +1,10 @@
-import { POST_COUNT } from "./index";
+import { CardData, POST_COUNT } from "./index";
 
 interface PostItem {
   url: string;
   kids?: number[];
   id: number;
+  text: string;
   title: string;
   by: string;
 }
@@ -27,17 +28,17 @@ async function fetchItem<T>(id: number) {
   ).then((r) => r.json())) as T;
 }
 
-export async function fetchData() {
+export async function fetchData(): Promise<CardData[]> {
   const top = await fetchTop();
   const limitedTop = top.slice(0, POST_COUNT);
-  const items = await Promise.all(
+  const posts = await Promise.all(
     limitedTop.map((id) => fetchItem<PostItem>(id))
   );
   let replaceI = POST_COUNT;
-  let itemsWithComments = items;
-  while (itemsWithComments.some(({ kids }) => !kids || kids.length === 0)) {
-    itemsWithComments = await Promise.all(
-      items.map((item) => {
+  let postsWithComments = posts;
+  while (postsWithComments.some(({ kids }) => !kids || kids.length === 0)) {
+    postsWithComments = await Promise.all(
+      posts.map((item) => {
         if (!item.kids || item.kids.length === 0) {
           return fetchItem<PostItem>(top[replaceI++]);
         }
@@ -46,19 +47,28 @@ export async function fetchData() {
     );
   }
   const comments = await Promise.all(
-    itemsWithComments.map(({ kids }) => fetchItem<CommentItem>(kids[0]))
+    postsWithComments.map(({ kids }) => fetchItem<CommentItem>(kids[0]))
   );
-  return itemsWithComments.map((post, i) => {
-    const comment = comments[i];
-    return {
-      post: {
-        ...post,
-        commentRef: comment,
-      },
-      comment: {
-        ...comment,
-        postRef: post,
-      },
-    };
-  });
+  const pairs = comments.map(
+    (_, i) => [postsWithComments[i], comments[i]] as const
+  );
+  const commentsAndPosts = pairs
+    .map<[CardData, CardData]>(([post, comment]) => {
+      return [
+        {
+          type: "post",
+          id: post.id,
+          matchingId: comment.id,
+          text: post.title,
+        },
+        {
+          type: "comment",
+          id: comment.id,
+          matchingId: post.id,
+          text: comment.text,
+        },
+      ];
+    })
+    .flat();
+  return commentsAndPosts;
 }

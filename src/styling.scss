@@ -115,6 +115,24 @@ body {
   }
 }
 
+@mixin fadeBottom($offset, $background) {
+  &:after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    bottom: $offset;
+    left: $offset;
+    pointer-events: none;
+    background-image: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0),
+      $background 100%
+    );
+    width: calc(100% - $offset * 2);
+    height: 4em;
+  }
+}
+
 .match-prompt {
   transition: opacity 1s;
   position: absolute;
@@ -193,7 +211,7 @@ body {
 
 .tip-promt {
   position: absolute;
-  bottom: -30px;
+  bottom: -40px;
   text-shadow: 0 0 15px rgba(0, 0, 0, 0.671);
   font-size: 0.9rem;
   text-align: center;
@@ -271,8 +289,10 @@ body {
             height: 100%;
             width: 100%;
             text-align: center;
-            border-radius: $card-border-radius;
             backface-visibility: hidden;
+          }
+          div {
+            border-radius: $card-border-radius;
           }
 
           .back {
@@ -280,6 +300,57 @@ body {
             background-color: white;
             color: black;
             transform: rotateY(180deg);
+            word-break: break-word;
+            overflow: hidden;
+            .sub {
+              box-sizing: border-box;
+              height: 100%;
+              padding: 5px;
+              display: flex;
+              flex-direction: column;
+              overflow: hidden;
+              .type {
+                text-transform: capitalize;
+                font-weight: 700;
+                font-size: 1.6rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                .icon {
+                  margin-bottom: -8px;
+                }
+              }
+              $border-width: 4px;
+              .text {
+                flex-grow: 1;
+                display: flex;
+                align-items: center;
+                flex-direction: column;
+                margin-top: 10px;
+              }
+              &.comment {
+                $background: #f6f6f0;
+                background-color: $background;
+                border: $border-width solid #ffc0a0;
+                .text {
+                  @include fadeBottom(
+                    $offset: $border-width,
+                    $background: $background
+                  );
+                }
+              }
+              &.post {
+                $background: #fcdbcb;
+                background-color: $background;
+                border: $border-width solid #fc935e;
+                .text {
+                  @include fadeBottom(
+                    $offset: $border-width,
+                    $background: $background
+                  );
+                }
+              }
+            }
           }
 
           .front {
