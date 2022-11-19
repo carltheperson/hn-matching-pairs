@@ -174,12 +174,15 @@ function Main() {
             el.style.top = "";
             el.style.left = "";
           };
-          setCards((cards) => {
-            cards[cardIndex] = {
-              ...cards[cardIndex],
-              flipped: false,
-            };
-            return [...cards];
+          // Putting this in a timeout with no delay fixed a glitchy animation on Chrome \_(ツ)_/
+          setTimeout(() => {
+            setCards((cards) => {
+              cards[cardIndex] = {
+                ...cards[cardIndex],
+                flipped: false,
+              };
+              return [...cards];
+            });
           });
         }
       });
@@ -216,7 +219,6 @@ function Main() {
     // A match is displayed
     if (matches()?.length) {
       setMatches(undefined);
-      console.log("Returning here");
       return;
     }
 

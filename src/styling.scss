@@ -323,9 +323,6 @@ body {
               $border-width: 4px;
               .text {
                 flex-grow: 1;
-                display: flex;
-                align-items: center;
-                flex-direction: column;
                 margin-top: 10px;
               }
               &.comment {
