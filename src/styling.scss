@@ -318,6 +318,16 @@ body {
                 justify-content: center;
                 .icon {
                   margin-bottom: -8px;
+                  svg {
+                    @media (max-width: 1600px) {
+                      scale: 0.8;
+                      margin-right: -10%;
+                    }
+                  }
+                }
+                word-break: keep-all;
+                @media (max-width: 1600px) {
+                  font-size: 1.4rem;
                 }
               }
               $border-width: 4px;

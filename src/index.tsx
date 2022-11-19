@@ -339,7 +339,6 @@ function Main() {
                                   <CommentIcon />
                                 )}
                               </div>
-
                               {data().type}
                             </div>
                             {() => {
