@@ -156,18 +156,6 @@ body {
     opacity: 0;
     transition-delay: 0;
   }
-
-  @keyframes pulse {
-    0% {
-      transform: scale(0.9);
-    }
-    50% {
-      transform: scale(1);
-    }
-    100% {
-      transform: scale(0.9);
-    }
-  }
 }
 
 .end-promt {
@@ -212,6 +200,14 @@ body {
   transform: scale(-1, 1);
 }
 
+.loading-promt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  color: #909090;
+}
+
 #root > div {
   display: flex;
   justify-content: center;
@@ -244,6 +240,8 @@ body {
       @include grid($rows-n: 4, $cols-n: 4);
     }
     .cards {
+      animation-name: fadeIn;
+      animation-duration: 2s;
       .card-outer {
         position: relative;
         .card {
@@ -312,7 +310,7 @@ body {
             }
           }
 
-          &:not(.flipped) {
+          &:not(.block-flips):not(.flipped) {
             animation-duration: 1s;
             animation-name: increasedZIndex;
             .inner {
@@ -320,6 +318,10 @@ body {
               animation-name: flipBack;
               @include displayCardReverse();
             }
+          }
+
+          &.block-flips .inner {
+            @include displayCardReverse();
           }
         }
       }
@@ -351,5 +353,26 @@ body {
   }
   100% {
     z-index: 100;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.9);
+  }
+  50% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0.9);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
   }
 }

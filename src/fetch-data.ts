@@ -48,7 +48,6 @@ export async function fetchData() {
   const comments = await Promise.all(
     itemsWithComments.map(({ kids }) => fetchItem<CommentItem>(kids[0]))
   );
-  console.log(comments);
   return itemsWithComments.map((post, i) => {
     const comment = comments[i];
     return {

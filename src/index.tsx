@@ -31,7 +31,7 @@ Things left:
  */
 
 interface Card {
-  flipped: boolean;
+  flipped?: boolean;
   outOfGame: boolean;
   elRef?: HTMLDivElement;
 }
@@ -98,20 +98,26 @@ function getNonInlineStyle(el: HTMLElement, key: string) {
 }
 
 function Main() {
-  const [cards, { mutate: setCards }] = createResource(() =>
-    Array.from({ length: 16 }).map(
-      () => ({ flipped: false, outOfGame: false } as Card)
-    )
+  const [cards, { mutate: setCards }] = createResource(
+    () =>
+      new Promise<Card[]>((r) =>
+        setTimeout(
+          () =>
+            r(
+              Array.from({ length: 16 }).map(
+                () => ({ outOfGame: false } as Card)
+              )
+            ),
+          2000
+        )
+      )
   );
-  // const [cards, setCards] = createSignal(
-  //   Array.from({ length: 16 }).map(
-  //     () => ({ flipped: false } as { flipped: boolean; elRef?: HTMLDivElement })
-  //   )
-  // );
+
   const [matches, setMatches] =
     createSignal<[{ cardIndex: number }, { cardIndex: number }]>();
 
   const [selected, setSelected] = createSignal<number>();
+  const [initialRender, setInitialRender] = createSignal(true);
 
   createComputed(() => {
     if (matches()?.length) {
@@ -172,7 +178,7 @@ function Main() {
 
   // Flip animation
   createEffect(() => {
-    if (cards().filter((c) => c.flipped).length === 1) {
+    if (cards()?.filter((c) => c.flipped).length === 1) {
       // The flip animations are kept in CSS, but they should still block the user from doing stuff while they run
       registerAnimation({ duration: 1000, blocking: true });
     }
@@ -242,86 +248,90 @@ function Main() {
 
   return (
     <div onClick={handleClick}>
-      <Portal>
-        <div
-          class="overlay"
-          classList={{ on: cards().some(({ flipped }) => flipped) }}
-        ></div>
-      </Portal>
       <h1 class="title">
         <span>HN</span> Matching Pairs
       </h1>
-      <div
-        class="cards-outer"
-        onmousemove={(
-          e: MouseEvent & {
-            sourceCapabilities?: { firesTouchEvents?: boolean };
-          }
-        ) => {
-          if (
-            !e?.sourceCapabilities?.firesTouchEvents &&
-            getInnerElementFromEvent(e)
-          ) {
-            document.body.style.cursor = "pointer";
-          } else {
-            document.body.style.cursor = "";
-          }
-        }}
-      >
-        <div class="cards" ref={cardsRef}>
-          <MatchPromt matches={matches} />
-          <EndPromt cards={cards} />
-          <Index each={cards()}>
-            {(data, i) => {
-              let cardRef: HTMLDivElement;
+      <Show when={cards()?.length} fallback={LoadingPromt}>
+        <Portal>
+          <div
+            class="overlay"
+            classList={{ on: cards().some(({ flipped }) => flipped) }}
+          ></div>
+        </Portal>
+        <div
+          class="cards-outer"
+          onmousemove={(
+            e: MouseEvent & {
+              sourceCapabilities?: { firesTouchEvents?: boolean };
+            }
+          ) => {
+            if (
+              !e?.sourceCapabilities?.firesTouchEvents &&
+              getInnerElementFromEvent(e)
+            ) {
+              document.body.style.cursor = "pointer";
+            } else {
+              document.body.style.cursor = "";
+            }
+          }}
+        >
+          <div class="cards" ref={cardsRef}>
+            <MatchPromt matches={matches} />
+            <EndPromt cards={cards} />
+            <Index each={cards()}>
+              {(data, i) => {
+                let cardRef: HTMLDivElement;
 
-              // Overflow animation
-              createEffect(() => {
-                if (!matches()?.some((m) => m.cardIndex == i)) {
-                  if (data().flipped) {
-                    preventWindowOverflowAnimations(cardRef);
-                    onCleanup(() => clearWindowOverlfowAnimations(cardRef));
+                // Overflow animation
+                createEffect(() => {
+                  if (!matches()?.some((m) => m.cardIndex == i)) {
+                    if (data().flipped) {
+                      preventWindowOverflowAnimations(cardRef);
+                      onCleanup(() => clearWindowOverlfowAnimations(cardRef));
+                    }
                   }
-                }
-              });
+                });
 
-              // Match animation
-              createEffect(() => {
-                const matchIndex = matches()?.findIndex(
-                  (m) => m.cardIndex == i
-                );
-                if (matchIndex !== undefined && matchIndex !== -1) {
-                  matchAnimation(cardRef, data().elRef, matchIndex);
-                }
-              });
+                // Match animation
+                createEffect(() => {
+                  const matchIndex = matches()?.findIndex(
+                    (m) => m.cardIndex == i
+                  );
+                  if (matchIndex !== undefined && matchIndex !== -1) {
+                    matchAnimation(cardRef, data().elRef, matchIndex);
+                  }
+                });
 
-              return (
-                <div class="card-outer" ref={cardRef}>
-                  <div
-                    class="card"
-                    classList={{
-                      flipped: data().flipped || data().outOfGame,
-                    }}
-                  >
-                    <div class="inner" ref={data().elRef}>
-                      <TipPromt card={data} />
-                      <div
-                        class="front"
-                        classList={{ selected: selected() == i }}
-                      ></div>
-                      <div class="back">
-                        A whole buuunch of text here Lorem ipsum dolor sit amet
-                        consectetur adipisicing elit. Lorem ipsum dolor sit
-                        amet, consectetur adipisicing elit. Est dolorem earum
+                return (
+                  <div class="card-outer" ref={cardRef}>
+                    <div
+                      class="card"
+                      classList={{
+                        flipped: data().flipped || data().outOfGame,
+                        "block-flips": data().flipped === undefined,
+                      }}
+                    >
+                      <div class="inner" ref={data().elRef}>
+                        <TipPromt card={data} />
+                        <div
+                          class="front"
+                          classList={{ selected: selected() == i }}
+                        ></div>
+                        <div class="back">
+                          A whole buuunch of text here Lorem ipsum dolor sit
+                          amet consectetur adipisicing elit. Lorem ipsum dolor
+                          sit amet, consectetur adipisicing elit. Est dolorem
+                          earum
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            }}
-          </Index>
+                );
+              }}
+            </Index>
+          </div>
         </div>
-      </div>
+      </Show>
     </div>
   );
 }
@@ -407,6 +417,10 @@ function TipPromt({ card }: { card: Accessor<Card> }) {
       }}
     </Show>
   );
+}
+
+function LoadingPromt() {
+  return <div class="loading-promt">Loading ...</div>;
 }
 
 function preventWindowOverflowAnimations(cardRef: HTMLElement) {
@@ -506,6 +520,14 @@ function matchAnimation(
     observer.observe(document.body);
   };
 }
+
+// function blockFlipAnimationRightAfterLoad(e: Event) {
+//   const el =
+//   (e.target as HTMLElement).classList.add("block-flip")
+//   setTimeout(() => {
+
+//   }, 100)
+// }
 
 function isMatch(matches?: [{ cardIndex: number }, { cardIndex: number }]) {
   return (matches?.[0].cardIndex || 0 + matches?.[1].cardIndex || 0) > 4;
