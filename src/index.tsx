@@ -497,7 +497,7 @@ function preventWindowOverflowAnimations(cardRef: HTMLElement) {
       animate(cardRef, [{ [name]: newVal }], {
         duration: 1000,
         iterations: 1,
-        blocking: true,
+        blocking: false,
       }).onfinish = () => (cardRef.style[name] = newVal);
     }
   });
@@ -510,7 +510,7 @@ function clearWindowOverlfowAnimations(cardRef: HTMLElement) {
       animate(cardRef, [{ [name]: val }], {
         duration: 1000,
         iterations: 1,
-        blocking: true,
+        blocking: false,
       }).onfinish = () => (cardRef.style[name] = "");
     }
   });
