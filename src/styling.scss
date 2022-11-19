@@ -206,8 +206,10 @@ body {
 .tip-promt {
   position: absolute;
   bottom: -30px;
-  text-shadow: 0 0 15px rgba(0, 0, 0, 0.361);
+  text-shadow: 0 0 15px rgba(0, 0, 0, 0.671);
   font-size: 0.9rem;
+  text-align: center;
+  transform: scale(-1, 1);
 }
 
 #root > div {

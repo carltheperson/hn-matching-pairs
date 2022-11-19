@@ -303,8 +303,8 @@ function Main() {
                       flipped: data().flipped || data().outOfGame,
                     }}
                   >
-                    <TipPromt card={data} />
                     <div class="inner" ref={data().elRef}>
+                      <TipPromt card={data} />
                       <div
                         class="front"
                         classList={{ selected: selected() == i }}
