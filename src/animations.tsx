@@ -8,6 +8,7 @@ import {
   createResource,
   createRoot,
   createSignal,
+  createUniqueId,
   onCleanup,
   Setter,
 } from "solid-js";
@@ -16,8 +17,8 @@ import { CardData } from ".";
 // Animations
 
 // # Card
-// - Flip
-// - Flip back
+// - Flip x
+// - Flip back x
 // - Avoid overflow
 // - Avoid overflow back
 
@@ -33,128 +34,129 @@ const ANIMATIONS_OPS = {
   duration: FLIP_DURATION,
 };
 
-const nonFlippedStyles = [{ transform: `rotateY(0) scale(${scale})` }];
-
-type Frame = {
-  property: string;
+const nonFlippedStyles = { transform: `rotateY(0) scale(${scale})` };
+const flippedStyles = { transform: "rotateY(180deg) scale(1)" };
+const nonFlippedZIndexStyles = { zIndex: "1" };
+const flippedZIndexStyles = {
+  // get zIndex() {
+  //   return +new Date() + "";
+  // },
+  zIndex: "100",
 };
 
-const flippedStyles = [
-  { transform: "rotateY(180deg) scale(1)" },
-  // { boxShadow: "0 0 25px rgba(0, 0, 0, 0.25)" },
-];
-
-function applyStyles(el: HTMLElement, styles: Record<string, string>[]) {
-  styles.forEach((obj) => {
-    const [[key, val]] = Object.entries(obj);
-    el.style[key] = val;
-  });
+function applyStyles(el: HTMLElement, styles: Record<string, string>) {
+  Object.entries(styles).forEach(([key, val]) => (el.style[key] = val));
 }
 
-function clearStyles(el: HTMLElement, styles: Record<string, string>[]) {
-  styles.forEach((obj) => {
-    const [key] = Object.keys(obj);
-    el.style[key] = "";
-  });
-}
-
-function getCurrentVersionOfStyles(
-  el: HTMLElement,
-  styles: Record<string, string>[]
-) {
-  const keys = Object.keys(styles[0]);
-  const style = getComputedStyle(el);
-  const r = [
-    Object.entries(style)
-      .filter(([key]) => keys.includes(key))
-      .reduce((acc, [key, value]) => {
-        return {
-          ...acc,
-          [key]: value,
-        };
-      }, {}),
-  ];
-  console.log(JSON.stringify(r));
-  return [{ r }];
-}
-
-export type FlipAnimation = "ended" | "started" | "to-end" | "to-start";
+export type AnimationState = "ended" | "started" | "to-end" | "to-start";
 
 // Create a util called revartable animation
 export function registerFlipAnimation(
-  el: HTMLElement,
+  inner: HTMLElement,
+  outer: HTMLElement,
   flipped: Accessor<boolean>
 ) {
-  const [flipAnimation, setFlipAnimation] =
-    createSignal<FlipAnimation>("ended");
+  const [innerAnimationState, setInnerAnimationState] =
+    createSignal<AnimationState>("ended");
+  const [outerAnimationState, setOuterAnimationState] =
+    createSignal<AnimationState>("ended");
+
+  const setBoth = (val: AnimationState) => {
+    setInnerAnimationState(val);
+    setOuterAnimationState(val);
+  };
 
   createEffect(() => {
-    const animationState = createRoot(() => flipAnimation());
     if (flipped() === undefined) {
       return;
     }
     if (flipped()) {
-      setFlipAnimation("to-start");
+      setBoth("to-start");
     } else if (!flipped()) {
-      setFlipAnimation("to-end");
+      setBoth("to-end");
     }
   });
 
-  let animation: Animation & { towards?: FlipAnimation };
+  revartableAnimation({
+    el: inner,
+    animationState: innerAnimationState,
+    setAnimationState: setInnerAnimationState,
+    offStyles: nonFlippedStyles,
+    onStyles: flippedStyles,
+  });
+
+  revartableAnimation({
+    el: outer,
+    animationState: outerAnimationState,
+    setAnimationState: setOuterAnimationState,
+    offStyles: nonFlippedZIndexStyles,
+    onStyles: flippedZIndexStyles,
+  });
+}
+
+function revartableAnimation({
+  el,
+  animationState,
+  setAnimationState,
+  onStyles,
+  offStyles,
+}: {
+  el: HTMLElement;
+  animationState: Accessor<AnimationState>;
+  setAnimationState: Setter<AnimationState>;
+  onStyles: Record<string, string>;
+  offStyles: Record<string, string>;
+}) {
+  let animation: Animation & { towards?: AnimationState };
+
   createEffect(() => {
-    // An animation should start
-    if (flipAnimation() == "to-start") {
+    if (animationState() == "to-start") {
       if (animation && animation.towards == "ended") {
         animation.playbackRate = -1; // This will play back the animation aka "revert" it
-        const scopeAnimation = animation;
+        const scopedAnimation = animation;
         animation.onfinish = () => {
-          if (animation == scopeAnimation) {
+          if (animation == scopedAnimation) {
             animation = null;
-            setFlipAnimation("started");
+            setAnimationState("started");
           }
         };
         return;
       }
-
-      const scopeAnimation = el.animate([{}, ...flippedStyles], ANIMATIONS_OPS);
-      animation = scopeAnimation;
+      animation = el.animate([{}, onStyles], ANIMATIONS_OPS);
       animation.towards = "started";
+      const scopedAnimation = animation;
       animation.onfinish = () => {
-        if (animation == scopeAnimation) {
+        if (scopedAnimation == animation) {
           animation = null;
-          setFlipAnimation("started");
+          setAnimationState("started");
         }
       };
-      // An animation should end
-    } else if (flipAnimation() == "to-end") {
+    } else if (animationState() == "to-end") {
       if (animation && animation.towards == "started") {
         animation.playbackRate = -1; // This will play back the animation aka "revert" it
-        const scopeAnimation = animation;
+        const scopedAnimation = animation;
         animation.onfinish = () => {
-          if (animation == scopeAnimation) {
+          if (scopedAnimation == animation) {
             animation = null;
-            setFlipAnimation("ended");
+            setAnimationState("ended");
           }
         };
         return;
       }
 
-      const scopeAnimation = el.animate(
-        [{}, ...nonFlippedStyles],
-        ANIMATIONS_OPS
-      );
-      animation = scopeAnimation;
+      animation = el.animate([{}, offStyles], ANIMATIONS_OPS);
       animation.towards = "ended";
+      const scopedAnimation = animation;
       animation.onfinish = () => {
-        if (animation == scopeAnimation) {
+        if (scopedAnimation == animation) {
           animation = null;
-          setFlipAnimation("ended");
+          setAnimationState("ended");
         }
       };
-    } else if (flipAnimation() == "started") {
-      applyStyles(el, flippedStyles);
-    } else if (flipAnimation() == "ended") {
-      applyStyles(el, nonFlippedStyles);
+    } else if (animationState() == "started") {
+      applyStyles(el, onStyles);
+    } else if (animationState() == "ended") {
+      applyStyles(el, offStyles);
     }
   });
 }

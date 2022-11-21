@@ -1,6 +1,6 @@
 import { createEffect, createSignal } from "solid-js";
 import { CardData } from ".";
-import { FlipAnimation, registerFlipAnimation } from "./animations";
+import { AnimationState, registerFlipAnimation } from "./animations";
 import { CommentIcon, PostIcon } from "./icons";
 
 export function Card({ text, type }: CardData, index: number) {
@@ -30,7 +30,7 @@ export function Card({ text, type }: CardData, index: number) {
   // });
 
   const card = (
-    <div class="card-outer" ref={cardRef}>
+    <div class="card-outer" ref={cardRef} onClick={() => setFlipped((f) => !f)}>
       <div
         class="card"
         classList={{
@@ -38,8 +38,8 @@ export function Card({ text, type }: CardData, index: number) {
           "block-flips": flipped() === undefined,
         }}
       >
-        <div class="clickable-card" onClick={() => setFlipped((f) => !f)}></div>
-        <div class="inner" ref={innerRef} onClick={() => setFlipped((f) => !f)}>
+        <div class="click-filler-card"></div>
+        <div class="inner" ref={innerRef}>
           {/* <TipPromt card={data} /> */}
           <div
             class="front"
@@ -66,7 +66,7 @@ export function Card({ text, type }: CardData, index: number) {
     </div>
   );
 
-  registerFlipAnimation(innerRef, flipped);
+  registerFlipAnimation(innerRef, cardRef, flipped);
 
   return card;
 }
