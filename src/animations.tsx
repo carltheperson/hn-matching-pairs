@@ -3,6 +3,7 @@ import {
   createComputed,
   createContext,
   createEffect,
+  createMemo,
   createReaction,
   createRenderEffect,
   createResource,
@@ -12,7 +13,7 @@ import {
   onCleanup,
   Setter,
 } from "solid-js";
-import { CardData } from ".";
+import { CardData, getNonInlineStyle } from ".";
 
 // Animations
 
@@ -81,17 +82,93 @@ export function registerFlipAnimation(
     el: inner,
     animationState: innerAnimationState,
     setAnimationState: setInnerAnimationState,
-    offStyles: nonFlippedStyles,
-    onStyles: flippedStyles,
+    offStyles: createSignal(nonFlippedStyles)[0],
+    onStyles: createSignal(flippedStyles)[0],
   });
 
   revartableAnimation({
     el: outer,
     animationState: outerAnimationState,
     setAnimationState: setOuterAnimationState,
-    offStyles: nonFlippedZIndexStyles,
-    onStyles: flippedZIndexStyles,
+    offStyles: createSignal(nonFlippedZIndexStyles)[0],
+    onStyles: createSignal(flippedZIndexStyles)[0],
   });
+}
+
+const RIGHT_OVERFLOW = {
+  coordVal: (x: number, width: number) => x + width,
+  overflow: (coordVal: number) => coordVal - window.innerWidth,
+  isOver: (overflow: number) => overflow > 0,
+};
+
+const LEFT_OVERFLOW = {
+  coordVal: (rect: DOMRect) => rect.x,
+  overflow: (coordVal: number) => coordVal,
+  isOver: (overflow: number) => overflow < 0,
+};
+
+const OVERFLOW_SIDES = [RIGHT_OVERFLOW];
+
+export async function registerOverflowPreventionAnimation(
+  inner: HTMLElement,
+  outer: HTMLElement,
+  flipped: Accessor<boolean>
+) {
+  await new Promise((r) => setTimeout(r));
+  const [animationState, setAnimationState] =
+    createSignal<AnimationState>("ended");
+
+  const [correctionAmount, setCorrectionAmount] = createSignal(0);
+  const [defaultStyles] = createSignal({ left: "0px" });
+
+  const getOverflow = ({
+    overflow,
+    coordVal,
+  }: typeof OVERFLOW_SIDES[number]) => {
+    const oldLeft = parseFloat(getComputedStyle(outer).left);
+    const rect = outer.getBoundingClientRect();
+    const calculatedOverflow = overflow(coordVal(rect.x - oldLeft, rect.width));
+    return calculatedOverflow;
+  };
+
+  const calculateCorrectionAmount = () => {
+    const overflowingSide = OVERFLOW_SIDES.find((side) =>
+      side.isOver(getOverflow(side))
+    );
+    if (overflowingSide) {
+      setCorrectionAmount(getOverflow(overflowingSide) * -1);
+    } else {
+      setCorrectionAmount(0);
+    }
+  };
+
+  createEffect(() => {
+    if (flipped() === undefined) {
+      return;
+    }
+    if (flipped()) {
+      setAnimationState("to-start");
+    } else if (!flipped()) {
+      setAnimationState("to-end");
+    }
+  });
+
+  calculateCorrectionAmount();
+
+  revartableAnimation({
+    el: outer,
+    animationState,
+    offStyles: defaultStyles,
+    onStyles: createMemo(() => ({
+      left: `${correctionAmount()}px`,
+    })),
+    setAnimationState,
+  });
+
+  const observer = new ResizeObserver(() => {
+    calculateCorrectionAmount();
+  });
+  observer.observe(document.body);
 }
 
 function revartableAnimation({
@@ -104,8 +181,8 @@ function revartableAnimation({
   el: HTMLElement;
   animationState: Accessor<AnimationState>;
   setAnimationState: Setter<AnimationState>;
-  onStyles: Record<string, string>;
-  offStyles: Record<string, string>;
+  onStyles: Accessor<Record<string, string>>;
+  offStyles: Accessor<Record<string, string>>;
 }) {
   let animation: Animation & { towards?: AnimationState };
 
@@ -122,7 +199,7 @@ function revartableAnimation({
         };
         return;
       }
-      animation = el.animate([{}, onStyles], ANIMATIONS_OPS);
+      animation = el.animate([{}, onStyles()], ANIMATIONS_OPS);
       animation.towards = "started";
       const scopedAnimation = animation;
       animation.onfinish = () => {
@@ -144,7 +221,7 @@ function revartableAnimation({
         return;
       }
 
-      animation = el.animate([{}, offStyles], ANIMATIONS_OPS);
+      animation = el.animate([{}, offStyles()], ANIMATIONS_OPS);
       animation.towards = "ended";
       const scopedAnimation = animation;
       animation.onfinish = () => {
@@ -154,9 +231,10 @@ function revartableAnimation({
         }
       };
     } else if (animationState() == "started") {
-      applyStyles(el, onStyles);
+      applyStyles(el, onStyles());
     } else if (animationState() == "ended") {
-      applyStyles(el, offStyles);
+      applyStyles(el, offStyles());
+      console.log("Ended");
     }
   });
 }

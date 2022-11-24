@@ -1,10 +1,15 @@
 import { createEffect, createSignal } from "solid-js";
 import { CardData } from ".";
-import { AnimationState, registerFlipAnimation } from "./animations";
+import {
+  AnimationState,
+  registerFlipAnimation,
+  registerOverflowPreventionAnimation,
+} from "./animations";
 import { CommentIcon, PostIcon } from "./icons";
 
 export function Card({ text, type }: CardData, index: number) {
   let cardRef: HTMLDivElement;
+  let cardChildRef: HTMLDivElement;
   let innerRef: HTMLDivElement;
   const [flipped, setFlipped] = createSignal<boolean>();
   const [outOfGame, setOutOfGame] = createSignal(false);
@@ -33,6 +38,7 @@ export function Card({ text, type }: CardData, index: number) {
     <div class="card-outer" ref={cardRef} onClick={() => setFlipped((f) => !f)}>
       <div
         class="card"
+        ref={cardChildRef}
         classList={{
           flipped: flipped() || outOfGame(),
           "block-flips": flipped() === undefined,
@@ -67,6 +73,7 @@ export function Card({ text, type }: CardData, index: number) {
   );
 
   registerFlipAnimation(innerRef, cardRef, flipped);
+  registerOverflowPreventionAnimation(innerRef, cardChildRef, flipped);
 
   return card;
 }

@@ -101,7 +101,7 @@ function getInnerElementFromEvent(e: MouseEvent) {
   return inner;
 }
 
-function getNonInlineStyle(el: HTMLElement, key: string) {
+export function getNonInlineStyle(el: HTMLElement, key: string) {
   const old = el.style[key];
   el.style[key] = "";
   const val = getComputedStyle(el)[key];
