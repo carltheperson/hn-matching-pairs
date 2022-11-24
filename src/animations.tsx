@@ -95,23 +95,24 @@ export function registerFlipAnimation(
   });
 }
 
+const OVERFLOW_BUFFER = 4; // px
+
 const RIGHT_OVERFLOW = {
-  coordVal: (x: number, width: number) => x + width,
+  coordVal: (x: number, width: number) => x + width + OVERFLOW_BUFFER,
   overflow: (coordVal: number) => coordVal - window.innerWidth,
   isOver: (overflow: number) => overflow > 0,
 };
 
 const LEFT_OVERFLOW = {
-  coordVal: (rect: DOMRect) => rect.x,
+  coordVal: (x: number) => x - OVERFLOW_BUFFER,
   overflow: (coordVal: number) => coordVal,
   isOver: (overflow: number) => overflow < 0,
 };
 
-const OVERFLOW_SIDES = [RIGHT_OVERFLOW];
+const OVERFLOW_SIDES = [LEFT_OVERFLOW, RIGHT_OVERFLOW];
 
 export async function registerOverflowPreventionAnimation(
-  inner: HTMLElement,
-  outer: HTMLElement,
+  card: HTMLElement,
   flipped: Accessor<boolean>
 ) {
   await new Promise((r) => setTimeout(r));
@@ -125,8 +126,8 @@ export async function registerOverflowPreventionAnimation(
     overflow,
     coordVal,
   }: typeof OVERFLOW_SIDES[number]) => {
-    const oldLeft = parseFloat(getComputedStyle(outer).left);
-    const rect = outer.getBoundingClientRect();
+    const oldLeft = parseFloat(getComputedStyle(card).left);
+    const rect = card.getBoundingClientRect();
     const calculatedOverflow = overflow(coordVal(rect.x - oldLeft, rect.width));
     return calculatedOverflow;
   };
@@ -156,7 +157,7 @@ export async function registerOverflowPreventionAnimation(
   calculateCorrectionAmount();
 
   revartableAnimation({
-    el: outer,
+    el: card,
     animationState,
     offStyles: defaultStyles,
     onStyles: createMemo(() => ({
@@ -165,9 +166,8 @@ export async function registerOverflowPreventionAnimation(
     setAnimationState,
   });
 
-  const observer = new ResizeObserver(() => {
-    calculateCorrectionAmount();
-  });
+  const observer = new ResizeObserver(calculateCorrectionAmount);
+
   observer.observe(document.body);
 }
 

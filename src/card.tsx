@@ -73,7 +73,7 @@ export function Card({ text, type }: CardData, index: number) {
   );
 
   registerFlipAnimation(innerRef, cardRef, flipped);
-  registerOverflowPreventionAnimation(innerRef, cardChildRef, flipped);
+  registerOverflowPreventionAnimation(cardChildRef, flipped);
 
   return card;
 }
