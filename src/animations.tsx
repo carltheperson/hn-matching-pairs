@@ -10,10 +10,10 @@ import {
   createRoot,
   createSignal,
   createUniqueId,
-  onCleanup,
+  onCleanup, onMount,
   Setter,
 } from "solid-js";
-import { CardData, getNonInlineStyle } from ".";
+import {CardData, getNonInlineStyle} from ".";
 
 // Animations
 
@@ -35,9 +35,9 @@ const ANIMATIONS_OPS = {
   duration: FLIP_DURATION,
 };
 
-const nonFlippedStyles = { transform: `rotateY(0) scale(${scale})` };
-const flippedStyles = { transform: "rotateY(180deg) scale(1)" };
-const nonFlippedZIndexStyles = { zIndex: "1" };
+const nonFlippedStyles = {transform: `rotateY(0) scale(${scale})`};
+const flippedStyles = {transform: "rotateY(180deg) scale(1)"};
+const nonFlippedZIndexStyles = {zIndex: "1"};
 const flippedZIndexStyles = {
   // get zIndex() {
   //   return +new Date() + "";
@@ -55,48 +55,27 @@ export type AnimationState = "ended" | "started" | "to-end" | "to-start";
 export function registerFlipAnimation(
   inner: HTMLElement,
   outer: HTMLElement,
-  flipped: Accessor<boolean>
+  animationState: Accessor<AnimationState>,
+  setAnimationState: Setter<AnimationState>
 ) {
-  const [innerAnimationState, setInnerAnimationState] =
-    createSignal<AnimationState>("ended");
-  const [outerAnimationState, setOuterAnimationState] =
-    createSignal<AnimationState>("ended");
 
-  const setBoth = (val: AnimationState) => {
-    setInnerAnimationState(val);
-    setOuterAnimationState(val);
-  };
-
-  createEffect(() => {
-    if (flipped() === undefined) {
-      return;
-    }
-    if (flipped()) {
-      setBoth("to-start");
-    } else if (!flipped()) {
-      setBoth("to-end");
-    }
+  revertibleAnimation({
+    el: inner,
+    animationState,
+    setAnimationState,
+    offStyles: createSignal(nonFlippedStyles)[0],
+    onStyles: createSignal(flippedStyles)[0],
   });
 
-  setTimeout(() => {
-    revartableAnimation({
-      el: inner,
-      animationState: innerAnimationState,
-      setAnimationState: setInnerAnimationState,
-      offStyles: createSignal(nonFlippedStyles)[0],
-      onStyles: createSignal(flippedStyles)[0],
-    });
-
-    revartableAnimation({
-      el: outer,
-      animationState: outerAnimationState,
-      setAnimationState: setOuterAnimationState,
-      offStyles: createSignal(nonFlippedZIndexStyles)[0],
-      onStyles: createSignal(flippedZIndexStyles)[0],
-    });
+  revertibleAnimation({
+    el: outer,
+    animationState,
+    setAnimationState: () => undefined,
+    offStyles: createSignal(nonFlippedZIndexStyles)[0],
+    onStyles: createSignal(flippedZIndexStyles)[0],
   });
 
-  return innerAnimationState;
+  return [animationState, setAnimationState] as const;
 }
 
 const OVERFLOW_BUFFER = 4; // px
@@ -117,22 +96,20 @@ const OVERFLOW_SIDES = [LEFT_OVERFLOW, RIGHT_OVERFLOW];
 
 export async function registerOverflowPreventionAnimation(
   card: HTMLElement,
-  flipped: Accessor<boolean>
+  flipped: Accessor<boolean>,
+  animationState: Accessor<AnimationState>,
+  setAnimationState: Setter<AnimationState>
 ) {
-  const [animationState, setAnimationState] =
-    createSignal<AnimationState>("ended");
-
   const [correctionAmount, setCorrectionAmount] = createSignal(0);
-  const [defaultStyles] = createSignal({ left: "0px" });
+  const [defaultStyles] = createSignal({left: "0px"});
 
   const getOverflow = ({
-    overflow,
-    coordVal,
-  }: typeof OVERFLOW_SIDES[number]) => {
+                         overflow,
+                         coordVal,
+                       }: typeof OVERFLOW_SIDES[number]) => {
     const oldLeft = parseFloat(getComputedStyle(card).left);
     const rect = card.getBoundingClientRect();
-    const calculatedOverflow = overflow(coordVal(rect.x - oldLeft, rect.width));
-    return calculatedOverflow;
+    return overflow(coordVal(rect.x - oldLeft, rect.width));
   };
 
   const calculateCorrectionAmount = () => {
@@ -159,7 +136,7 @@ export async function registerOverflowPreventionAnimation(
 
   calculateCorrectionAmount();
 
-  revartableAnimation({
+  revertibleAnimation({
     el: card,
     animationState,
     offStyles: defaultStyles,
@@ -174,13 +151,13 @@ export async function registerOverflowPreventionAnimation(
   observer.observe(document.body);
 }
 
-function revartableAnimation({
-  el,
-  animationState,
-  setAnimationState,
-  onStyles,
-  offStyles,
-}: {
+function revertibleAnimation({
+                               el,
+                               animationState,
+                               setAnimationState,
+                               onStyles,
+                               offStyles,
+                             }: {
   el: HTMLElement;
   animationState: Accessor<AnimationState>;
   setAnimationState: Setter<AnimationState>;

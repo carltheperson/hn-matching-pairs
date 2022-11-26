@@ -1,4 +1,4 @@
-import {Accessor, createEffect, createSignal} from "solid-js";
+import {Accessor, createEffect, createSignal, onMount, Setter} from "solid-js";
 import {CardData} from ".";
 import {
   AnimationState,
@@ -24,12 +24,21 @@ export function Card({
   let cardRef: HTMLDivElement;
   let cardChildRef: HTMLDivElement;
   let innerRef: HTMLDivElement;
-  let flipAnimationState: Accessor<AnimationState>;
   const [outOfGame, setOutOfGame] = createSignal(false);
 
-  setTimeout(() => {
-    flipAnimationState = registerFlipAnimation(innerRef, cardRef, flipped);
-    registerOverflowPreventionAnimation(cardChildRef, flipped);
+  const [flipAnimationState, setFlipAnimationState] = createSignal<AnimationState>("ended");
+  const [overflowAnimationState, setOverflowAnimationState] = createSignal<AnimationState>("ended");
+
+  onMount(() => {
+    registerFlipAnimation(innerRef, cardRef, flipAnimationState, setFlipAnimationState);
+    registerOverflowPreventionAnimation(cardChildRef, flipped, overflowAnimationState, setOverflowAnimationState);
+
+    createEffect(() => {
+      if (flipped() !== undefined) {
+        setFlipAnimationState(flipped() ? "to-start" : "to-end")
+        setOverflowAnimationState(flipped() ? "to-start" : "to-end")
+      }
+    })
   });
 
   return (
