@@ -58,7 +58,8 @@ body {
 }
 
 @mixin grid($rows-n, $cols-n) {
-  $gap: calc(10px + 2vw);
+  //$gap: calc(10px + 2vw);
+  $gap: calc(2.25vw);
 
   $width: min($card-width, calc((100vw - ($gap * ($cols-n))) / $cols-n));
   $height: calc($width * $card-height-ratio);

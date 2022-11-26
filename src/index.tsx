@@ -325,6 +325,7 @@ function Main() {
                   requestFlip={() => onFlipRequest(i)}
                   flipped={createMemo(() => isFlippedToSelect(i))}
                   compared={compared}
+                  cardsContainerRef={cardsRef}
                 />
               );
             })}
@@ -421,15 +422,6 @@ function isMatch(
     cards[matches[0].cardIndex].matchingId === cards[matches[1].cardIndex].id
   );
 }
-
-const getShuffledArr = (arr) => {
-  const newArr = arr.slice();
-  for (let i = newArr.length - 1; i > 0; i--) {
-    const rand = Math.floor(Math.random() * (i + 1));
-    [newArr[i], newArr[rand]] = [newArr[rand], newArr[i]];
-  }
-  return newArr;
-};
 
 const root = document.querySelector("#root");
 render(() => <Main/>, root);

@@ -16,11 +16,13 @@ export function Card({
                        requestFlip,
                        flipped,
                        compared,
+                       cardsContainerRef,
                      }: CardData & {
   selected: Accessor<boolean>;
   requestFlip: () => void;
   flipped: Accessor<boolean>;
   compared: Accessor<"left" | "right" | false>;
+  cardsContainerRef: HTMLDivElement;
 }) {
   let cardRef: HTMLDivElement;
   let cardChildRef: HTMLDivElement;
@@ -34,7 +36,7 @@ export function Card({
   onMount(() => {
     registerFlipAnimation(innerRef, cardRef, flipAnimationState, setFlipAnimationState);
     registerOverflowPreventionAnimation(cardChildRef, overflowAnimationState, setOverflowAnimationState);
-    registerComparisonAnimation(cardRef, comparisonAnimationState, setComparisonAnimationState);
+    registerComparisonAnimation(cardRef, cardsContainerRef, compared, comparisonAnimationState, setComparisonAnimationState);
 
     createEffect(() => {
       if (compared() !== null && !flipped()) {
@@ -82,7 +84,7 @@ export function Card({
               {() => {
                 let ref: HTMLDivElement;
                 const textEl = <div class="text" ref={ref}></div>;
-                ref.innerHTML = text;
+                ref.innerHTML = text; // Oh god I hope HN's API sanitizes their HTML
                 return textEl;
               }}
             </div>

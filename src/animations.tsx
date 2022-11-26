@@ -130,25 +130,53 @@ export function registerOverflowPreventionAnimation(
   });
 
   const observer = new ResizeObserver(calculateCorrectionAmount);
-
   observer.observe(document.body);
 }
 
+const COMPARISION_GAB = () => window.innerWidth < 1000 ? window.innerWidth * 0.0225 : 10
+
 export function registerComparisonAnimation(
   card: HTMLElement,
+  cardsContainer: HTMLElement,
+  side: Accessor<"left" | "right" | false>,
   animationState: Accessor<AnimationState>,
   setAnimationState: Setter<AnimationState>
 ) {
-  const [offStyles] = createSignal({transform: "translate(0px)"});
-  const [onStyles, setOnStyles] = createSignal({transform: "translate(100px)"});
+  const [offStyles] = createSignal({transform: "translate(0px, 0px)"});
+  const [centerStyles, setCenterStyles] = createSignal({transform: ""});
+
+  const calculateCenterStyles = () => {
+    const old = card.style.transform;
+    card.style.transform = "";
+    const {width, height, x, y} = card.getBoundingClientRect();
+    card.style.transform = old;
+    const {
+      width: containerWidth,
+      height: containerHeight,
+      x: containerX,
+      y: containerY
+    } = cardsContainer.getBoundingClientRect()
+    const targetY = (containerHeight / 2 + containerY) - height / 2;
+    const newY = y - targetY;
+    const targetX = (containerWidth / 2 + containerX) - (side() === "left" ? width : 0) + ((side() === "left" ? -1 : 1) * COMPARISION_GAB());
+    const newX = x - targetX;
+    setCenterStyles({transform: `translate(${newX * -1}px, ${newY * -1}px)`});
+  }
+
+  createComputed(() => {
+    calculateCenterStyles();
+  })
 
   revertibleAnimation({
     el: card,
     animationState,
     setAnimationState,
-    onStyles,
+    onStyles: centerStyles,
     offStyles,
   })
+
+  const observer = new ResizeObserver(calculateCenterStyles);
+  observer.observe(document.body, {});
 }
 
 function revertibleAnimation({
