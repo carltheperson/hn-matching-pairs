@@ -249,8 +249,8 @@ function Main() {
 
   let cardsRef: HTMLDivElement;
 
-  const [rightComparedCard, setRightComparedCard] = createSignal<number | undefined>()
-  const [leftComparedCard, setLeftComparedCard] = createSignal<number | undefined>()
+  const [rightComparedCard, setRightComparedCard] = createSignal<number | null>(null)
+  const [leftComparedCard, setLeftComparedCard] = createSignal<number | null>(null)
   const isRightCompared = createSelector<number, number>(rightComparedCard)
   const isLeftCompared = createSelector<number, number>(leftComparedCard)
 
@@ -261,8 +261,8 @@ function Main() {
   }
 
   const clearCompared = () => {
-    setRightComparedCard(undefined);
-    setLeftComparedCard(undefined);
+    setRightComparedCard(null);
+    setLeftComparedCard(null);
   }
 
   const [selectedCard, setSelectedCard] = createSignal<number | null>(null);
@@ -271,15 +271,41 @@ function Main() {
   const [flippedToSelect, setFlippedToSelect] = createSignal<number | null>(null);
   const isFlippedToSelect = createSelector<number, number>(flippedToSelect);
 
-  let overlayCb: () => void;
+  const onFlipRequest = (i: number) => {
+    if (rightComparedCard() !== null && leftComparedCard() !== null) {
+      // We are being compared to another card. User clicking to flip indicates that they want to end the comparison
+      clearCompared() // This un-flips both compared cards
+      setFlippedToSelect(null);
+      setSelectedCard(null);
+    } else if (flippedToSelect() !== null) {
+      // We can assume that this card is the only one currently flipped
+      // When the user un-flips it, we want this to be selected
+      setSelectedCard(flippedToSelect());
+      setFlippedToSelect(null);
+    } else {
+      if (selectedCard() === null) {
+        // Nothing is selected or flipped. User wants to flip this card
+        setFlippedToSelect(i);
+      } else if (selectedCard() === i) {
+        // User is not allowed to flip selected card
+        return;
+      } else {
+        // User has a card selected and is clicking another one
+        // This means they want to compare the cards
+        updateCompared(i, selectedCard())
+        setSelectedCard(null);
+        setFlippedToSelect(null);
+      }
+    }
+  };
 
   return (
     <div onClick={handleClick}>
       <Portal>
         <div
           class="overlay"
-          classList={{on: flippedToSelect() !== null || rightComparedCard() !== undefined}}
-          onClick={() => overlayCb?.()}
+          classList={{on: flippedToSelect() !== null || (rightComparedCard() !== null && leftComparedCard() !== null)}}
+          onClick={() => onFlipRequest(-1)}
         ></div>
       </Portal>
       <h1 class="title">
@@ -293,41 +319,11 @@ function Main() {
             {cards().map((data, i) => {
               const compared = createMemo((prev) => isRightCompared(i) ? "right" : isLeftCompared(i) ? "left" : prev === undefined ? null : false);
 
-              const onFlipRequest = () => {
-                if (compared()) {
-                  // We are being compared to another card. User clicking to flip indicates that they want to end the comparison
-                  clearCompared() // This un-flips both compared cards
-                  setFlippedToSelect(null);
-                  setSelectedCard(null);
-                } else if (isFlippedToSelect(i)) {
-                  // We can assume that this card is the only one currently flipped
-                  // When the user un-flips it, we want this to be selected
-                  setSelectedCard(i);
-                  setFlippedToSelect(null);
-                } else {
-                  if (selectedCard() === null) {
-                    // Nothing is selected or flipped. User wants to flip this card
-                    setFlippedToSelect(i);
-                    overlayCb = onFlipRequest;
-                  } else if (selectedCard() === i) {
-                    // User is not allowed to flip selected card
-                    return;
-                  } else {
-                    // User has a card selected and is clicking another one
-                    // This means they want to compare the cards
-                    updateCompared(i, selectedCard())
-                    setSelectedCard(null);
-                    setFlippedToSelect(null);
-                    overlayCb = onFlipRequest;
-                  }
-                }
-              };
-
               return (
                 <Card
                   {...data}
                   selected={createMemo(() => isSelected(i))}
-                  requestFlip={onFlipRequest}
+                  requestFlip={() => onFlipRequest(i)}
                   flipped={createMemo(() => isFlippedToSelect(i))}
                   compared={compared}
                 />
