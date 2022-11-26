@@ -44,8 +44,7 @@ body {
   }
 }
 
-@mixin safariFriendlyOutlineBorderRadius {
-  content: "";
+@mixin safariFriendlyOutlineBorderRadius($color) {
   position: absolute;
   $thinkness: 7px;
   $offset: 1px;
@@ -54,12 +53,12 @@ body {
   right: $thinkness-and-offset-inverse;
   bottom: $thinkness-and-offset-inverse;
   left: $thinkness-and-offset-inverse;
-  border: $thinkness solid rgb(62, 62, 62);
+  border: $thinkness solid $color;
   border-radius: calc($card-border-radius + $offset);
 }
 
 @mixin grid($rows-n, $cols-n) {
-  $gap: 2.25vw;
+  $gap: calc(10px + 2vw);
 
   $width: min($card-width, calc((100vw - ($gap * ($cols-n))) / $cols-n));
   $height: calc($width * $card-height-ratio);
@@ -250,11 +249,11 @@ body {
       }
     }
 
-    @media (min-width: 1600px) {
+    @media (min-width: 1000px) {
       @include grid($rows-n: 2, $cols-n: 8);
       margin-top: 50px;
     }
-    @media screen and (min-width: 0px) and (max-width: 1600px) {
+    @media screen and (min-width: 0px) and (max-width: 1000px) {
       @include grid($rows-n: 4, $cols-n: 4);
     }
     .cards {
@@ -281,7 +280,6 @@ body {
             width: 100%;
             height: 100%;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            // transition: transform 1s;
             transform-style: preserve-3d;
             &:hover {
               cursor: pointer;
@@ -387,11 +385,18 @@ body {
               left: 50%;
               transform: translateY(-50%) translateX(-50%);
             }
-            transition: outline-color 0.2s;
-            outline: 9px solid rgba(0, 0, 0, 0);
 
+            transition: border 0.15s;
             &.selected {
-              @include safariFriendlyOutlineBorderRadius();
+              @include safariFriendlyOutlineBorderRadius(
+                $color: rgb(62, 62, 62)
+              );
+              cursor: not-allowed;
+            }
+            &:not(.selected) {
+              @include safariFriendlyOutlineBorderRadius(
+                $color: rgba(0, 0, 0, 0)
+              );
             }
           }
 

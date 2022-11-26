@@ -1,35 +1,14 @@
-import {
-  Accessor,
-  createComputed,
-  createEffect,
-  createMemo,
-  createRenderEffect,
-  createResource,
-  createSignal,
-  For,
-  Index,
-  onCleanup,
-  Resource,
-  Show,
-} from "solid-js";
-import { Portal, render } from "solid-js/web";
-import { fetchData } from "./fetch-data";
-import confetti from "canvas-confetti";
-import {} from "./animations";
-import { Card } from "./card";
+import {createComputed, createMemo, createResource, createSelector, createSignal, onCleanup, Show,} from "solid-js";
+import {Portal, render} from "solid-js/web";
+import {Card} from "./card";
+import {EndPromt, LoadingPromt, MatchPromt} from "./promts";
 
 /*
 Things left:
-[x] Make it so that you can click trough the overlay early
-[x] Register flip animation to block user
-[x] Nicer not a match text
-[x] End screen
-[x] Tip thing
-[ ] Non mock cards
-[ ] Link to post
-[ ] Better component structure
-[ ] Scrolling thing
-[ ] Starting animation
+ [x] Nail Solid JS
+ [x] Switch to webstorm
+ [ ] Comparision animation
+ [ ] Account for `deleted: true`
  */
 
 // type CardData = Awaited<ReturnType<typeof fetchData>>[number] & {
@@ -110,16 +89,16 @@ export function getNonInlineStyle(el: HTMLElement, key: string) {
 }
 
 function Main() {
-  const [cards, { mutate: setCards }] = createResource(
+  const [cards, {mutate: setCards}] = createResource(
     // () => fetchData().then(getShuffledArr) as Promise<CardData[]>
     () =>
       new Promise<Card[]>((r) =>
         setTimeout(
           () =>
             r(
-              Array.from({ length: 16 }).map(
+              Array.from({length: 16}).map(
                 () =>
-                  ({ outOfGame: false, text: "hi", type: "post" } as CardData)
+                  ({outOfGame: false, text: "hi", type: "post"} as CardData)
               )
             ),
           500
@@ -152,9 +131,9 @@ function Main() {
   createComputed(() => {
     const oldMatches = matches();
     onCleanup(() => {
-      oldMatches?.forEach(({ cardIndex }) => {
+      oldMatches?.forEach(({cardIndex}) => {
         if (isMatch(oldMatches, cards())) {
-          animate(cards()[cardIndex].elRef.parentElement, [{ opacity: "0" }], {
+          animate(cards()[cardIndex].elRef.parentElement, [{opacity: "0"}], {
             duration: 500,
             blocking: false,
           }).onfinish = () => cards()[cardIndex].elRef.remove();
@@ -170,7 +149,7 @@ function Main() {
           const el = cards()[cardIndex].elRef.parentElement.parentElement;
           const top = getNonInlineStyle(el, "top");
           const left = getNonInlineStyle(el, "left");
-          animate(el, [{ top, left }], {
+          animate(el, [{top, left}], {
             duration: 750,
             blocking: false,
           }).onfinish = () => {
@@ -192,23 +171,23 @@ function Main() {
     });
   });
 
-  // Flip animation
-  createEffect(() => {
-    if (cards()?.filter((c) => c.flipped).length === 1) {
-      // The flip animations are kept in CSS, but they should still block the user from doing stuff while they run
-      registerAnimation({ duration: 1000, blocking: true });
-    }
-  });
+  // // Flip animation
+  // createEffect(() => {
+  //   if (cards()?.filter((c) => c.flipped).length === 1) {
+  //     // The flip animations are kept in CSS, but they should still block the user from doing stuff while they run
+  //     registerAnimation({ duration: 1000, blocking: true });
+  //   }
+  // });
 
   function setMatchesInCorrectOrder(i1: number, i2: number) {
     const card1 = cards()[i1];
     const card2 = cards()[i2];
-    const { x: x1 } = card1.elRef.getBoundingClientRect();
-    const { x: x2 } = card2.elRef.getBoundingClientRect();
+    const {x: x1} = card1.elRef.getBoundingClientRect();
+    const {x: x2} = card2.elRef.getBoundingClientRect();
     setMatches(
       x1 < x2
-        ? [{ cardIndex: i1 }, { cardIndex: i2 }]
-        : [{ cardIndex: i2 }, { cardIndex: i1 }]
+        ? [{cardIndex: i1}, {cardIndex: i2}]
+        : [{cardIndex: i2}, {cardIndex: i1}]
     );
   }
 
@@ -262,148 +241,66 @@ function Main() {
 
   let cardsRef: HTMLDivElement;
 
+  const [rightComparedCard, setRightComparedCard] = createSignal<number | undefined>()
+  const [leftComparedCard, setLeftComparedCard] = createSignal<number | undefined>()
+  const isRightCompared = createSelector<number, number>(rightComparedCard)
+  const isLeftCompared = createSelector<number, number>(leftComparedCard)
+
+  const [selectedCard, setSelectedCard] = createSignal<number | null>(null);
+  const isSelected = createSelector<number, number>(selectedCard);
+
   return (
     <div onClick={handleClick}>
       <h1 class="title">
         <span>HN</span> Matching Pairs
       </h1>
-      <Show when={cards()?.length} fallback={LoadingPromt}>
+      <Show keyed={true} when={cards()?.length} fallback={LoadingPromt}>
         <Portal>
           <div
             class="overlay"
-            classList={{ on: cards().some(({ flipped }) => flipped) }}
+            classList={{on: cards().some(({flipped}) => flipped)}}
           ></div>
         </Portal>
         <div class="cards-outer">
           <div class="cards" ref={cardsRef}>
-            <MatchPromt matches={matches} cards={cards} />
-            <EndPromt cards={cards} />
-            {cards().map(Card)}
+            <MatchPromt matches={matches} cards={cards}/>
+            <EndPromt cards={cards}/>
+            {cards().map((data, i) => {
+              const [flipped, setFlipped] = createSignal<boolean>();
+
+              const onFlipRequest = () => {
+                if (flipped()) {
+                  setSelectedCard(i);
+                  setFlipped(false);
+                  return;
+                }
+                if (selectedCard() === null) {
+                  setFlipped(true);
+                  return;
+                }
+                if (selectedCard() === i) {
+                  return;
+                }
+                setRightComparedCard(i);
+                setLeftComparedCard(selectedCard());
+                setSelectedCard(null);
+              };
+
+              return (
+                <Card
+                  {...data}
+                  selected={createMemo(() => isSelected(i))}
+                  requestFlip={onFlipRequest}
+                  flipped={flipped}
+                  compared={createMemo(() => isRightCompared(i) ? "right" : isLeftCompared(i) ? "left" : false)}
+                />
+              );
+            })}
           </div>
         </div>
       </Show>
     </div>
   );
-}
-
-function MatchPromt({
-  matches,
-  cards,
-}: {
-  matches: Accessor<
-    [
-      {
-        cardIndex: number;
-      },
-      {
-        cardIndex: number;
-      }
-    ]
-  >;
-  cards: Resource<CardData[]>;
-}) {
-  let lastIsMatch_ = false;
-  const isMatch_ = createMemo(() => {
-    if (matches() === undefined) {
-      return lastIsMatch_;
-    } else if (isMatch(matches(), cards())) {
-      lastIsMatch_ = true;
-    } else {
-      lastIsMatch_ = false;
-    }
-    return lastIsMatch_;
-  });
-
-  createComputed(() => {
-    if (matches() !== undefined && isMatch_()) {
-      setTimeout(() => {
-        confetti();
-      }, 500);
-    }
-  });
-
-  return (
-    <div
-      class="match-prompt"
-      classList={{
-        on: matches() !== undefined,
-      }}
-    >
-      <h1
-        classList={{
-          ["is-match"]: isMatch_(),
-        }}
-      >
-        {isMatch_() ? "It's a match!" : "Not a match"}
-      </h1>
-    </div>
-  );
-}
-
-function EndPromt({ cards }: { cards: Resource<CardData[]> }) {
-  return (
-    <div
-      class="end-promt"
-      classList={{
-        on: cards().every((c) => c.outOfGame),
-      }}
-    >
-      <div class="text">
-        <div>Game Over</div>
-        <div>Well Done!</div>
-        <div class="small">(refresh to try again)</div>
-      </div>
-    </div>
-  );
-}
-
-function TipPromt({ card }: { card: Accessor<CardData> }) {
-  return (
-    <Show when={card().flipped}>
-      {() => {
-        if (localStorage["shown-tip"]) {
-          return;
-        }
-        localStorage["shown-tip"] = "1";
-        return <div class="tip-promt">Tip: Click anywhere to close card</div>;
-      }}
-    </Show>
-  );
-}
-
-function LoadingPromt() {
-  return <div class="loading-promt">Loading ...</div>;
-}
-
-function preventWindowOverflowAnimations(cardRef: HTMLElement) {
-  SIDES.forEach(({ coordVal, modifyWithCurrent, name, overflow, prefix }) => {
-    const rec = cardRef.getBoundingClientRect();
-    const coordVal_ = coordVal(rec);
-    const overflow_ = overflow(coordVal_);
-    if (overflow_ > 0) {
-      const current = parseInt(getNonInlineStyle(cardRef, name));
-      const final = modifyWithCurrent(current, overflow_) + 5;
-      const newVal = prefix + final + "px";
-      animate(cardRef, [{ [name]: newVal }], {
-        duration: 1000,
-        iterations: 1,
-        blocking: false,
-      }).onfinish = () => (cardRef.style[name] = newVal);
-    }
-  });
-}
-
-function clearWindowOverlfowAnimations(cardRef: HTMLElement) {
-  SIDES.forEach(({ name }) => {
-    if (cardRef.style[name]) {
-      const val = getNonInlineStyle(cardRef, name);
-      animate(cardRef, [{ [name]: val }], {
-        duration: 1000,
-        iterations: 1,
-        blocking: false,
-      }).onfinish = () => (cardRef.style[name] = "");
-    }
-  });
 }
 
 function matchAnimation(
@@ -416,14 +313,14 @@ function matchAnimation(
 
   let first = true;
   const getTopAndLeft = () => {
-    const { top: top_, left: left_ } = getComputedStyle(cardRef);
+    const {top: top_, left: left_} = getComputedStyle(cardRef);
     let top = parseFloat(top_);
     const left = parseFloat(left_);
-    let { width: cardWidth, height: cardHeight } =
+    let {width: cardWidth, height: cardHeight} =
       cardRef.getBoundingClientRect();
-    let { width: innerWidth } = innerRef.getBoundingClientRect();
-    const { x: innerX } = innerRef.getBoundingClientRect();
-    const { y: cardY } = cardRef.getBoundingClientRect();
+    let {width: innerWidth} = innerRef.getBoundingClientRect();
+    const {x: innerX} = innerRef.getBoundingClientRect();
+    const {y: cardY} = cardRef.getBoundingClientRect();
 
     // After the animation has ran for the first time, the cards have been scaled up
     // This is to ensure consistency in the calculations
@@ -434,7 +331,7 @@ function matchAnimation(
     first = false;
 
     // Calculating top
-    const { y: containerY, height: containerHeight } =
+    const {y: containerY, height: containerHeight} =
       cardRef.parentElement.getBoundingClientRect();
     const targetY = containerHeight / 2 - cardHeight / 2 + containerY;
     const yDiff = cardY - targetY;
@@ -453,7 +350,7 @@ function matchAnimation(
     }
     const newLeft = left - xDiff;
 
-    return { top: `${newTop}px`, left: `${newLeft}px` };
+    return {top: `${newTop}px`, left: `${newLeft}px`};
   };
 
   animate(cardRef, [getTopAndLeft()], {
@@ -461,11 +358,11 @@ function matchAnimation(
     iterations: 1,
     blocking: true,
   }).onfinish = () => {
-    const { top, left } = getTopAndLeft();
+    const {top, left} = getTopAndLeft();
     cardRef.style.top = top;
     cardRef.style.left = left;
-    observer = new ResizeObserver((entries) => {
-      const { top, left } = getTopAndLeft();
+    observer = new ResizeObserver(() => {
+      const {top, left} = getTopAndLeft();
       cardRef.style.top = top;
       cardRef.style.left = left;
     });
@@ -503,20 +400,8 @@ const getShuffledArr = (arr) => {
 };
 
 const root = document.querySelector("#root");
-render(() => <Main />, root);
+render(() => <Main/>, root);
 const children = Array.from(root.children);
 if (children.length === 2) {
   children[0].remove();
 }
-
-// Current top -98.9997
-// Current Y 154.7109375
-// Want to reach 400
-// Y-reach-differ -245.2890625
-// New top 146.28936249999998px
-
-// Current top -98.9997
-// Current Y 53.939353942871094
-// Want to reach 400
-// Y-reach-differ-346.0606460571289
-// New top 247.0609460571289px

@@ -1,69 +1,73 @@
-import { createEffect, createSignal } from "solid-js";
-import { CardData } from ".";
+import {Accessor, createEffect, createSignal} from "solid-js";
+import {CardData} from ".";
 import {
   AnimationState,
   registerFlipAnimation,
   registerOverflowPreventionAnimation,
 } from "./animations";
-import { CommentIcon, PostIcon } from "./icons";
+import {CommentIcon, PostIcon} from "./icons";
+import {TipPromt} from "./promts";
 
-export function Card({ text, type }: CardData, index: number) {
+export function Card({
+                       text,
+                       type,
+                       selected,
+                       requestFlip,
+                       flipped,
+                       compared,
+                     }: CardData & {
+  selected: Accessor<boolean>;
+  requestFlip: () => void;
+  flipped: Accessor<boolean>;
+  compared: Accessor<"left" | "right" | false>;
+}) {
   let cardRef: HTMLDivElement;
   let cardChildRef: HTMLDivElement;
   let innerRef: HTMLDivElement;
-  const [flipped, setFlipped] = createSignal<boolean>();
+  let flipAnimationState: Accessor<AnimationState>;
   const [outOfGame, setOutOfGame] = createSignal(false);
 
-  // // Overflow animation
-  // createEffect(() => {
-  // 	if (!matches()?.some((m) => m.cardIndex == i)) {
-  // 		if (data().flipped) {
-  // 			preventWindowOverflowAnimati®ons(cardRef);
-  // 			onCleanup(() => clearWindowOverlfowAnimations(cardRef));
-  // 		}
-  // 	}
-  // });
+  setTimeout(() => {
+    flipAnimationState = registerFlipAnimation(innerRef, cardRef, flipped);
+    registerOverflowPreventionAnimation(cardChildRef, flipped);
+  });
 
-  // // Match animation
-  // createEffect(() => {
-  // 	const matchIndex = matches()?.findIndex(
-  // 		(m) => m.cardIndex == i
-  // 	);
-  // 	if (matchIndex !== undefined && matchIndex !== -1) {
-  // 		matchAnimation(cardRef, data().elRef, matchIndex);
-  // 	}
-  // });
-
-  const card = (
-    <div class="card-outer" ref={cardRef} onClick={() => setFlipped((f) => !f)}>
+  return (
+    <div class="card-outer" ref={cardRef} onClick={requestFlip}>
       <div
         class="card"
         ref={cardChildRef}
         classList={{
           flipped: flipped() || outOfGame(),
           "block-flips": flipped() === undefined,
+          compared: compared() !== false,
         }}
       >
         <div class="click-filler-card"></div>
         <div class="inner" ref={innerRef}>
-          {/* <TipPromt card={data} /> */}
+          <TipPromt flipped={flipped}/>
           <div
             class="front"
-            // classList={{ selected: selected() == i }}
+            classList={{
+              selected:
+                selected() &&
+                (flipAnimationState?.() === "ended" ||
+                  flipAnimationState?.() === "to-end"),
+            }}
           ></div>
           <div class="back">
             <div class={"sub " + type}>
               <div class="type">
                 <div class="icon">
-                  {type === "post" ? <PostIcon /> : <CommentIcon />}
+                  {type === "post" ? <PostIcon/> : <CommentIcon/>}
                 </div>
                 {type}
               </div>
               {() => {
                 let ref: HTMLDivElement;
-                const back = <div class="text" ref={ref}></div>;
+                const textEl = <div class="text" ref={ref}></div>;
                 ref.innerHTML = text;
-                return back;
+                return textEl;
               }}
             </div>
           </div>
@@ -71,9 +75,4 @@ export function Card({ text, type }: CardData, index: number) {
       </div>
     </div>
   );
-
-  registerFlipAnimation(innerRef, cardRef, flipped);
-  registerOverflowPreventionAnimation(cardChildRef, flipped);
-
-  return card;
 }

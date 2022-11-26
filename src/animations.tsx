@@ -78,21 +78,25 @@ export function registerFlipAnimation(
     }
   });
 
-  revartableAnimation({
-    el: inner,
-    animationState: innerAnimationState,
-    setAnimationState: setInnerAnimationState,
-    offStyles: createSignal(nonFlippedStyles)[0],
-    onStyles: createSignal(flippedStyles)[0],
+  setTimeout(() => {
+    revartableAnimation({
+      el: inner,
+      animationState: innerAnimationState,
+      setAnimationState: setInnerAnimationState,
+      offStyles: createSignal(nonFlippedStyles)[0],
+      onStyles: createSignal(flippedStyles)[0],
+    });
+
+    revartableAnimation({
+      el: outer,
+      animationState: outerAnimationState,
+      setAnimationState: setOuterAnimationState,
+      offStyles: createSignal(nonFlippedZIndexStyles)[0],
+      onStyles: createSignal(flippedZIndexStyles)[0],
+    });
   });
 
-  revartableAnimation({
-    el: outer,
-    animationState: outerAnimationState,
-    setAnimationState: setOuterAnimationState,
-    offStyles: createSignal(nonFlippedZIndexStyles)[0],
-    onStyles: createSignal(flippedZIndexStyles)[0],
-  });
+  return innerAnimationState;
 }
 
 const OVERFLOW_BUFFER = 4; // px
@@ -115,7 +119,6 @@ export async function registerOverflowPreventionAnimation(
   card: HTMLElement,
   flipped: Accessor<boolean>
 ) {
-  await new Promise((r) => setTimeout(r));
   const [animationState, setAnimationState] =
     createSignal<AnimationState>("ended");
 
@@ -234,7 +237,6 @@ function revartableAnimation({
       applyStyles(el, onStyles());
     } else if (animationState() == "ended") {
       applyStyles(el, offStyles());
-      console.log("Ended");
     }
   });
 }
