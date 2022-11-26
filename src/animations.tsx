@@ -35,15 +35,6 @@ const ANIMATIONS_OPS = {
   duration: FLIP_DURATION,
 };
 
-const nonFlippedStyles = {transform: `rotateY(0) scale(${scale})`};
-const flippedStyles = {transform: "rotateY(180deg) scale(1)"};
-const nonFlippedZIndexStyles = {zIndex: "1"};
-const flippedZIndexStyles = {
-  // get zIndex() {
-  //   return +new Date() + "";
-  // },
-  zIndex: "100",
-};
 
 function applyStyles(el: HTMLElement, styles: Record<string, string>) {
   Object.entries(styles).forEach(([key, val]) => (el.style[key] = val));
@@ -58,6 +49,10 @@ export function registerFlipAnimation(
   animationState: Accessor<AnimationState>,
   setAnimationState: Setter<AnimationState>
 ) {
+  const nonFlippedStyles = {transform: `rotateY(0) scale(${scale})`};
+  const flippedStyles = {transform: "rotateY(180deg) scale(1)"};
+  const nonFlippedZIndexStyles = {zIndex: "1"};
+  const flippedZIndexStyles = {zIndex: "100"};
 
   revertibleAnimation({
     el: inner,
@@ -67,13 +62,13 @@ export function registerFlipAnimation(
     onStyles: createSignal(flippedStyles)[0],
   });
 
-  revertibleAnimation({
-    el: outer,
-    animationState,
-    setAnimationState: () => undefined,
-    offStyles: createSignal(nonFlippedZIndexStyles)[0],
-    onStyles: createSignal(flippedZIndexStyles)[0],
-  });
+  // revertibleAnimation({
+  //   el: outer,
+  //   animationState,
+  //   setAnimationState: () => undefined,
+  //   offStyles: createSignal(nonFlippedZIndexStyles)[0],
+  //   onStyles: createSignal(flippedZIndexStyles)[0],
+  // });
 
   return [animationState, setAnimationState] as const;
 }
@@ -94,9 +89,8 @@ const LEFT_OVERFLOW = {
 
 const OVERFLOW_SIDES = [LEFT_OVERFLOW, RIGHT_OVERFLOW];
 
-export async function registerOverflowPreventionAnimation(
+export function registerOverflowPreventionAnimation(
   card: HTMLElement,
-  flipped: Accessor<boolean>,
   animationState: Accessor<AnimationState>,
   setAnimationState: Setter<AnimationState>
 ) {
@@ -123,17 +117,6 @@ export async function registerOverflowPreventionAnimation(
     }
   };
 
-  createEffect(() => {
-    if (flipped() === undefined) {
-      return;
-    }
-    if (flipped()) {
-      setAnimationState("to-start");
-    } else if (!flipped()) {
-      setAnimationState("to-end");
-    }
-  });
-
   calculateCorrectionAmount();
 
   revertibleAnimation({
@@ -149,6 +132,23 @@ export async function registerOverflowPreventionAnimation(
   const observer = new ResizeObserver(calculateCorrectionAmount);
 
   observer.observe(document.body);
+}
+
+export function registerComparisonAnimation(
+  card: HTMLElement,
+  animationState: Accessor<AnimationState>,
+  setAnimationState: Setter<AnimationState>
+) {
+  const [offStyles] = createSignal({transform: "translate(0px)"});
+  const [onStyles, setOnStyles] = createSignal({transform: "translate(100px)"});
+
+  revertibleAnimation({
+    el: card,
+    animationState,
+    setAnimationState,
+    onStyles,
+    offStyles,
+  })
 }
 
 function revertibleAnimation({

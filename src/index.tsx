@@ -1,4 +1,13 @@
-import {createComputed, createMemo, createResource, createSelector, createSignal, onCleanup, Show,} from "solid-js";
+import {
+  createComputed,
+  createEffect,
+  createMemo,
+  createResource,
+  createSelector,
+  createSignal,
+  onCleanup,
+  Show,
+} from "solid-js";
 import {Portal, render} from "solid-js/web";
 import {Card} from "./card";
 import {EndPromt, LoadingPromt, MatchPromt} from "./promts";
@@ -22,7 +31,6 @@ export interface CardData {
   id: number;
   matchingId: number;
   text: string;
-  flipped?: boolean;
   outOfGame?: boolean;
   elRef?: HTMLDivElement;
 }
@@ -92,7 +100,7 @@ function Main() {
   const [cards, {mutate: setCards}] = createResource(
     // () => fetchData().then(getShuffledArr) as Promise<CardData[]>
     () =>
-      new Promise<Card[]>((r) =>
+      new Promise<CardData[]>((r) =>
         setTimeout(
           () =>
             r(
@@ -246,8 +254,23 @@ function Main() {
   const isRightCompared = createSelector<number, number>(rightComparedCard)
   const isLeftCompared = createSelector<number, number>(leftComparedCard)
 
+  const updateCompared = (i1: number, i2: number) => {
+    // TODO: Sort
+    setRightComparedCard(i1);
+    setLeftComparedCard(i2);
+  }
+
+  const clearCompared = () => {
+    setRightComparedCard(undefined);
+    setLeftComparedCard(undefined);
+  }
+
   const [selectedCard, setSelectedCard] = createSignal<number | null>(null);
   const isSelected = createSelector<number, number>(selectedCard);
+
+  const [flippedToSelect, setFlippedToSelect] = createSignal<number | null>(null);
+  // const isFlippedToSelect = createSelector<number, number>(flippedToSelect);
+  const isFlippedToSelect = (index: number) => index === flippedToSelect();
 
   return (
     <div onClick={handleClick}>
@@ -266,24 +289,35 @@ function Main() {
             <MatchPromt matches={matches} cards={cards}/>
             <EndPromt cards={cards}/>
             {cards().map((data, i) => {
-              const [flipped, setFlipped] = createSignal<boolean>();
+              const compared = createMemo((prev) => isRightCompared(i) ? "right" : isLeftCompared(i) ? "left" : prev === undefined ? null : false);
 
               const onFlipRequest = () => {
-                if (flipped()) {
+                if (compared()) {
+                  // We are being compared to another card. User clicking to flip indicates that they want to end the comparison
+                  clearCompared() // This un-flips both compared cards
+                  setFlippedToSelect(null);
+                  setSelectedCard(null);
+                }// If we are **currently** flipped
+                else if (isFlippedToSelect(i)) {
+                  // We can assume that this card is the only one currently flipped
+                  // When the user un-flips it, we want this to be selected
                   setSelectedCard(i);
-                  setFlipped(false);
-                  return;
+                  setFlippedToSelect(null);
+                } else {
+                  if (selectedCard() === null) {
+                    // Nothing is selected or flipped. User wants to flip this card
+                    setFlippedToSelect(i);
+                  } else if (selectedCard() === i) {
+                    // User is not allowed to flip selected card
+                    return;
+                  } else {
+                    // User has a card selected and is clicking another one
+                    // This means they want to compare the cards
+                    updateCompared(i, selectedCard())
+                    setSelectedCard(null);
+                    setFlippedToSelect(null);
+                  }
                 }
-                if (selectedCard() === null) {
-                  setFlipped(true);
-                  return;
-                }
-                if (selectedCard() === i) {
-                  return;
-                }
-                setRightComparedCard(i);
-                setLeftComparedCard(selectedCard());
-                setSelectedCard(null);
               };
 
               return (
@@ -291,8 +325,8 @@ function Main() {
                   {...data}
                   selected={createMemo(() => isSelected(i))}
                   requestFlip={onFlipRequest}
-                  flipped={flipped}
-                  compared={createMemo(() => isRightCompared(i) ? "right" : isLeftCompared(i) ? "left" : false)}
+                  flipped={createMemo(() => isFlippedToSelect(i))}
+                  compared={compared}
                 />
               );
             })}

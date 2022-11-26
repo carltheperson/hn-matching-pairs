@@ -1,7 +1,7 @@
 import {Accessor, createEffect, createSignal, onMount, Setter} from "solid-js";
 import {CardData} from ".";
 import {
-  AnimationState,
+  AnimationState, registerComparisonAnimation,
   registerFlipAnimation,
   registerOverflowPreventionAnimation,
 } from "./animations";
@@ -28,15 +28,19 @@ export function Card({
 
   const [flipAnimationState, setFlipAnimationState] = createSignal<AnimationState>("ended");
   const [overflowAnimationState, setOverflowAnimationState] = createSignal<AnimationState>("ended");
+  const [comparisonAnimationState, setComparisonAnimationState] = createSignal<AnimationState>("ended");
 
   onMount(() => {
     registerFlipAnimation(innerRef, cardRef, flipAnimationState, setFlipAnimationState);
-    registerOverflowPreventionAnimation(cardChildRef, flipped, overflowAnimationState, setOverflowAnimationState);
+    registerOverflowPreventionAnimation(cardChildRef, overflowAnimationState, setOverflowAnimationState);
+    registerComparisonAnimation(cardRef, comparisonAnimationState, setComparisonAnimationState);
 
     createEffect(() => {
-      if (flipped() !== undefined) {
+      if (compared() !== null && !flipped()) {
+        setComparisonAnimationState(compared() ? "to-start" : "to-end")
+        setFlipAnimationState(compared() ? "to-start" : "to-end")
+      } else {
         setFlipAnimationState(flipped() ? "to-start" : "to-end")
-        setOverflowAnimationState(flipped() ? "to-start" : "to-end")
       }
     })
   });
