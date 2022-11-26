@@ -21,7 +21,7 @@ export function Card({
                      }: CardData & {
   selected: Accessor<boolean>;
   requestFlip: () => void;
-  flipped: Accessor<boolean>;
+  flipped: Accessor<boolean | null>;
   compared: Accessor<"left" | "right" | false>;
   cardsContainerRef: HTMLDivElement;
   setCardRef: (ref: HTMLDivElement) => void;
@@ -47,7 +47,7 @@ export function Card({
         setComparisonAnimationState(compared() ? "to-start" : "to-end")
         setFlipAnimationState(compared() ? "to-start" : "to-end")
         setOverflowAnimationState("to-end")
-      } else {
+      } else if (flipped() !== null) {
         setFlipAnimationState(flipped() ? "to-start" : "to-end")
         setOverflowAnimationState(flipped() ? "to-start" : "to-end")
       }

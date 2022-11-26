@@ -16,7 +16,7 @@ import {EndPromt, LoadingPromt, MatchPromt} from "./promts";
 Things left:
  [x] Nail Solid JS
  [x] Switch to webstorm
- [x] Comparision animation
+ [x] Comparison animation
  [ ] Account for `deleted: true`
  */
 
@@ -133,7 +133,7 @@ function Main() {
                   {...data}
                   selected={createMemo(() => isSelected(i))}
                   requestFlip={() => handleClick(i)}
-                  flipped={createMemo(() => isFlippedToSelect(i))}
+                  flipped={createMemo((prev) => isFlippedToSelect(i) ? true : prev === undefined ? null : false)}
                   compared={compared}
                   cardsContainerRef={cardsContainerRef}
                   setCardRef={(ref) => cardsRefs[i] = ref}

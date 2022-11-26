@@ -13,7 +13,6 @@ import {
   onCleanup, onMount,
   Setter,
 } from "solid-js";
-import {CardData, getNonInlineStyle} from ".";
 
 // Animations
 
@@ -29,6 +28,8 @@ import {CardData, getNonInlineStyle} from ".";
 // - Remove compared cards
 
 const scale = "0.5";
+
+const ANIMATION_REVERSIAL_SPEED = 1.5
 
 const FLIP_DURATION = 750;
 const ANIMATIONS_OPS = {
@@ -69,6 +70,7 @@ export function registerFlipAnimation(
     offStyles: createSignal(nonFlippedZIndexStyles)[0],
     onStyles: createSignal(flippedZIndexStyles)[0],
   });
+
 
   return [animationState, setAnimationState] as const;
 }
@@ -133,7 +135,7 @@ export function registerOverflowPreventionAnimation(
   observer.observe(document.body);
 }
 
-const COMPARISION_GAB = () => window.innerWidth < 1000 ? window.innerWidth * 0.0225 : 10
+const COMPARISON_GAB = () => window.innerWidth < 1000 ? window.innerWidth * 0.0225 : 10
 
 export function registerComparisonAnimation(
   card: HTMLElement,
@@ -142,13 +144,14 @@ export function registerComparisonAnimation(
   animationState: Accessor<AnimationState>,
   setAnimationState: Setter<AnimationState>
 ) {
-  const [offStyles] = createSignal({transform: "translate(0px, 0px)"});
+  const [offStyles, setOffStyles] = createSignal({transform: "translate(0px, 0px)"});
   const [centerStyles, setCenterStyles] = createSignal({transform: ""});
 
   const calculateCenterStyles = () => {
     const old = card.style.transform;
     card.style.transform = "";
     const {width, height, x, y} = card.getBoundingClientRect();
+    // setOffStyles({transform: old})
     card.style.transform = old;
     const {
       width: containerWidth,
@@ -158,7 +161,7 @@ export function registerComparisonAnimation(
     } = cardsContainer.getBoundingClientRect()
     const targetY = (containerHeight / 2 + containerY) - height / 2;
     const newY = y - targetY;
-    const targetX = (containerWidth / 2 + containerX) - (side() === "left" ? width : 0) + ((side() === "left" ? -1 : 1) * COMPARISION_GAB());
+    const targetX = (containerWidth / 2 + containerX) - (side() === "left" ? width : 0) + ((side() === "left" ? -1 : 1) * COMPARISON_GAB());
     const newX = x - targetX;
     setCenterStyles({transform: `translate(${newX * -1}px, ${newY * -1}px)`});
   }
@@ -197,7 +200,7 @@ function revertibleAnimation({
   createEffect(() => {
     if (animationState() == "to-start") {
       if (animation && animation.towards == "ended") {
-        animation.playbackRate = -1; // This will play back the animation aka "revert" it
+        animation.playbackRate = -ANIMATION_REVERSIAL_SPEED; // This will play back the animation aka "revert" it
         const scopedAnimation = animation;
         animation.onfinish = () => {
           if (animation == scopedAnimation) {
@@ -218,7 +221,7 @@ function revertibleAnimation({
       };
     } else if (animationState() == "to-end") {
       if (animation && animation.towards == "started") {
-        animation.playbackRate = -1; // This will play back the animation aka "revert" it
+        animation.playbackRate = -ANIMATION_REVERSIAL_SPEED; // This will play back the animation aka "revert" it
         const scopedAnimation = animation;
         animation.onfinish = () => {
           if (scopedAnimation == animation) {
