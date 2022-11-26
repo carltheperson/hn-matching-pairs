@@ -7,6 +7,7 @@ import {
 } from "./animations";
 import {CommentIcon, PostIcon} from "./icons";
 import {TipPromt} from "./promts";
+import {Portal} from "solid-js/web";
 
 export function Card({
                        text,
@@ -39,8 +40,10 @@ export function Card({
       if (compared() !== null && !flipped()) {
         setComparisonAnimationState(compared() ? "to-start" : "to-end")
         setFlipAnimationState(compared() ? "to-start" : "to-end")
+        setOverflowAnimationState("to-end")
       } else {
         setFlipAnimationState(flipped() ? "to-start" : "to-end")
+        setOverflowAnimationState(flipped() ? "to-start" : "to-end")
       }
     })
   });

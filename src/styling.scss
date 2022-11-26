@@ -108,9 +108,10 @@ body {
   &.on {
     background-color: #0000001c;
     backdrop-filter: blur(0.8px);
+    z-index: 2;
   }
-  pointer-events: none;
   &:not(.on) {
+    pointer-events: none;
   }
 }
 

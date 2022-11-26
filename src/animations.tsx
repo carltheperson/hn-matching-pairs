@@ -62,13 +62,13 @@ export function registerFlipAnimation(
     onStyles: createSignal(flippedStyles)[0],
   });
 
-  // revertibleAnimation({
-  //   el: outer,
-  //   animationState,
-  //   setAnimationState: () => undefined,
-  //   offStyles: createSignal(nonFlippedZIndexStyles)[0],
-  //   onStyles: createSignal(flippedZIndexStyles)[0],
-  // });
+  revertibleAnimation({
+    el: outer,
+    animationState,
+    setAnimationState: () => undefined,
+    offStyles: createSignal(nonFlippedZIndexStyles)[0],
+    onStyles: createSignal(flippedZIndexStyles)[0],
+  });
 
   return [animationState, setAnimationState] as const;
 }

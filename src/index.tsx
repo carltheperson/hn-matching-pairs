@@ -269,21 +269,23 @@ function Main() {
   const isSelected = createSelector<number, number>(selectedCard);
 
   const [flippedToSelect, setFlippedToSelect] = createSignal<number | null>(null);
-  // const isFlippedToSelect = createSelector<number, number>(flippedToSelect);
-  const isFlippedToSelect = (index: number) => index === flippedToSelect();
+  const isFlippedToSelect = createSelector<number, number>(flippedToSelect);
+
+  let overlayCb: () => void;
 
   return (
     <div onClick={handleClick}>
+      <Portal>
+        <div
+          class="overlay"
+          classList={{on: flippedToSelect() !== null || rightComparedCard() !== undefined}}
+          onClick={() => overlayCb?.()}
+        ></div>
+      </Portal>
       <h1 class="title">
         <span>HN</span> Matching Pairs
       </h1>
       <Show keyed={true} when={cards()?.length} fallback={LoadingPromt}>
-        <Portal>
-          <div
-            class="overlay"
-            classList={{on: cards().some(({flipped}) => flipped)}}
-          ></div>
-        </Portal>
         <div class="cards-outer">
           <div class="cards" ref={cardsRef}>
             <MatchPromt matches={matches} cards={cards}/>
@@ -297,8 +299,7 @@ function Main() {
                   clearCompared() // This un-flips both compared cards
                   setFlippedToSelect(null);
                   setSelectedCard(null);
-                }// If we are **currently** flipped
-                else if (isFlippedToSelect(i)) {
+                } else if (isFlippedToSelect(i)) {
                   // We can assume that this card is the only one currently flipped
                   // When the user un-flips it, we want this to be selected
                   setSelectedCard(i);
@@ -307,6 +308,7 @@ function Main() {
                   if (selectedCard() === null) {
                     // Nothing is selected or flipped. User wants to flip this card
                     setFlippedToSelect(i);
+                    overlayCb = onFlipRequest;
                   } else if (selectedCard() === i) {
                     // User is not allowed to flip selected card
                     return;
@@ -316,6 +318,7 @@ function Main() {
                     updateCompared(i, selectedCard())
                     setSelectedCard(null);
                     setFlippedToSelect(null);
+                    overlayCb = onFlipRequest;
                   }
                 }
               };
