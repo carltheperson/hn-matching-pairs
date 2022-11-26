@@ -144,14 +144,15 @@ export function registerComparisonAnimation(
   animationState: Accessor<AnimationState>,
   setAnimationState: Setter<AnimationState>
 ) {
-  const [offStyles, setOffStyles] = createSignal({transform: "translate(0px, 0px)"});
+  const [offStyles] = createSignal({transform: "translate(0px, 0px)"});
   const [centerStyles, setCenterStyles] = createSignal({transform: ""});
+
+  const nonNullSide = createMemo(old => side() || old)
 
   const calculateCenterStyles = () => {
     const old = card.style.transform;
     card.style.transform = "";
     const {width, height, x, y} = card.getBoundingClientRect();
-    // setOffStyles({transform: old})
     card.style.transform = old;
     const {
       width: containerWidth,
@@ -161,7 +162,7 @@ export function registerComparisonAnimation(
     } = cardsContainer.getBoundingClientRect()
     const targetY = (containerHeight / 2 + containerY) - height / 2;
     const newY = y - targetY;
-    const targetX = (containerWidth / 2 + containerX) - (side() === "left" ? width : 0) + ((side() === "left" ? -1 : 1) * COMPARISON_GAB());
+    const targetX = (containerWidth / 2 + containerX) - (nonNullSide() === "left" ? width : 0) + ((nonNullSide() === "left" ? -1 : 1) * COMPARISON_GAB());
     const newX = x - targetX;
     setCenterStyles({transform: `translate(${newX * -1}px, ${newY * -1}px)`});
   }
@@ -187,7 +188,7 @@ export function registerOutOfGameAnimation(el: HTMLElement, outOfGameAnimationSt
     if (outOfGameAnimationState()) {
       // This animation is one-way. Once you're out, you're out
       el.animate([{opacity: "1"}, {opacity: "0"}], {duration: FLIP_DURATION}).onfinish = () => {
-        el.style.display = "none"
+        el.remove()
       }
     }
   })

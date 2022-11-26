@@ -40,12 +40,12 @@ export function ComparisonPrompt({
   );
 }
 
-export function EndPrompt({cards}: { cards: Resource<CardData[]> }) {
+export function EndPrompt({done}: { done: Accessor<boolean> }) {
   return (
     <div
       class="end-prompt"
       classList={{
-        on: cards().every((c) => c.outOfGame),
+        on: done(),
       }}
     >
       <div class="text">

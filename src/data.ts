@@ -1,7 +1,8 @@
 import {CardData} from "./index";
 
 const POST_COUNT = 8;
-const ACCEPTABLE_COMMENT_AMOUNT = 1;
+export const CARD_COUNT = POST_COUNT * 2;
+const ACCEPTABLE_COMMENT_AMOUNT = 2;
 
 interface PostItem {
   url: string;

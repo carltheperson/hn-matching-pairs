@@ -1,4 +1,4 @@
-import {Accessor, createEffect, createSignal, onMount, Setter} from "solid-js";
+import {Accessor, createEffect, createRoot, createSignal, onMount, Setter} from "solid-js";
 import {CardData} from ".";
 import {
   AnimationState, registerComparisonAnimation,
@@ -19,6 +19,7 @@ export function Card({
                        cardsContainerRef,
                        setCardRef,
                        outOfGame,
+                       markAsFullyDone,
                      }: CardData & {
   selected: Accessor<boolean>;
   requestFlip: () => void;
@@ -26,6 +27,7 @@ export function Card({
   compared: Accessor<"left" | "right" | false>;
   cardsContainerRef: HTMLDivElement;
   setCardRef: (ref: HTMLDivElement) => void;
+  markAsFullyDone: () => void
   outOfGame: Accessor<boolean>
 }) {
   let cardRef: HTMLDivElement;
@@ -46,8 +48,10 @@ export function Card({
     registerOutOfGameAnimation(cardChildRef, outOfGameAnimationState);
 
     createEffect(() => {
-      if (outOfGame() && compared() === false) {
+      if (createRoot(() => outOfGame()) && compared() === false) {
         setOutOfGameAnimationState(true);
+        markAsFullyDone();
+        return;
       }
       if (compared() !== null && !flipped()) {
         setComparisonAnimationState(compared() ? "to-start" : "to-end")

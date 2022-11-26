@@ -11,7 +11,7 @@ import {
 import {Portal, render} from "solid-js/web";
 import {Card} from "./card";
 import {EndPrompt, LoadingPrompt, ComparisonPrompt} from "./prompts";
-import {checkMatch, fetchData, getShuffledArray} from "./data";
+import {CARD_COUNT, checkMatch, fetchData, getShuffledArray} from "./data";
 
 /*
 Things left:
@@ -54,6 +54,7 @@ function Main() {
   );
 
   const cardsRefs: HTMLDivElement[] = []
+  const [fullyDones, setFullyDones] = createSignal<number[]>([])
 
   const [rightComparedCard, setRightComparedCard] = createSignal<number | null>(null)
   const [leftComparedCard, setLeftComparedCard] = createSignal<number | null>(null)
@@ -79,8 +80,7 @@ function Main() {
     setLeftComparedCard(null);
   }
 
-  const isMatch = createMemo(() => (rightComparedCard() !== null && leftComparedCard() !== null) ? checkMatch(cards(), rightComparedCard(), leftComparedCard()) : null)
-
+  const isMatch = createMemo(() => (rightComparedCard() === null || leftComparedCard() === null) ? null : checkMatch(cards(), rightComparedCard(), leftComparedCard()))
 
   const [selectedCard, setSelectedCard] = createSignal<number | null>(null);
   const isSelected = createSelector<number, number>(selectedCard);
@@ -134,7 +134,7 @@ function Main() {
         <div class="cards-outer">
           <div class="cards" ref={cardsContainerRef}>
             <ComparisonPrompt isMatch={isMatch}/>
-            {/*<EndPromt cards={cards}/>*/}
+            <EndPrompt done={createMemo(() => fullyDones().length === CARD_COUNT)}/>
             {cards().map((data, i) => {
               const compared = createMemo((prev) => isRightCompared(i) ? "right" : isLeftCompared(i) ? "left" : prev === undefined ? null : false);
               const outOfGame = createMemo<boolean>((prev) => prev || (compared() ? isMatch() : false))
@@ -150,6 +150,7 @@ function Main() {
                   cardsContainerRef={cardsContainerRef}
                   setCardRef={(ref) => cardsRefs[i] = ref}
                   outOfGame={outOfGame}
+                  markAsFullyDone={() => setFullyDones((old) => [...old, i])}
                 />
               );
             })}
