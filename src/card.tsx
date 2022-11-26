@@ -17,12 +17,14 @@ export function Card({
                        flipped,
                        compared,
                        cardsContainerRef,
+                       setCardRef,
                      }: CardData & {
   selected: Accessor<boolean>;
   requestFlip: () => void;
   flipped: Accessor<boolean>;
   compared: Accessor<"left" | "right" | false>;
   cardsContainerRef: HTMLDivElement;
+  setCardRef: (ref: HTMLDivElement) => void;
 }) {
   let cardRef: HTMLDivElement;
   let cardChildRef: HTMLDivElement;
@@ -34,6 +36,8 @@ export function Card({
   const [comparisonAnimationState, setComparisonAnimationState] = createSignal<AnimationState>("ended");
 
   onMount(() => {
+    setCardRef(cardRef)
+
     registerFlipAnimation(innerRef, cardRef, flipAnimationState, setFlipAnimationState);
     registerOverflowPreventionAnimation(cardChildRef, overflowAnimationState, setOverflowAnimationState);
     registerComparisonAnimation(cardRef, cardsContainerRef, compared, comparisonAnimationState, setComparisonAnimationState);
@@ -84,7 +88,7 @@ export function Card({
               {() => {
                 let ref: HTMLDivElement;
                 const textEl = <div class="text" ref={ref}></div>;
-                ref.innerHTML = text; // Oh god I hope HN's API sanitizes their HTML
+                ref.innerHTML = text; // Oh god I hope HN sanitizes this HTML
                 return textEl;
               }}
             </div>

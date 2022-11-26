@@ -30,7 +30,7 @@ import {CardData, getNonInlineStyle} from ".";
 
 const scale = "0.5";
 
-const FLIP_DURATION = 1000;
+const FLIP_DURATION = 750;
 const ANIMATIONS_OPS = {
   duration: FLIP_DURATION,
 };
