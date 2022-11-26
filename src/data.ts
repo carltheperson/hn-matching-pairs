@@ -1,4 +1,7 @@
-import { CardData, POST_COUNT } from "./index";
+import {CardData} from "./index";
+
+const POST_COUNT = 8;
+const ACCEPTABLE_COMMENT_AMOUNT = 1;
 
 interface PostItem {
   url: string;
@@ -14,6 +17,7 @@ interface CommentItem {
   parent: number;
   text: string;
   by: string;
+  deleted: true;
 }
 
 async function fetchTop() {
@@ -36,10 +40,10 @@ export async function fetchData(): Promise<CardData[]> {
   );
   let replaceI = POST_COUNT;
   let postsWithComments = posts;
-  while (postsWithComments.some(({ kids }) => !kids || kids.length === 0)) {
+  while (postsWithComments.some(({kids}) => !kids || kids.length < ACCEPTABLE_COMMENT_AMOUNT)) {
     postsWithComments = await Promise.all(
       posts.map((item) => {
-        if (!item.kids || item.kids.length === 0) {
+        if (!item.kids || item.kids.length < ACCEPTABLE_COMMENT_AMOUNT) {
           return fetchItem<PostItem>(top[replaceI++]);
         }
         return item;
@@ -47,8 +51,19 @@ export async function fetchData(): Promise<CardData[]> {
     );
   }
   const comments = await Promise.all(
-    postsWithComments.map(({ kids }) => fetchItem<CommentItem>(kids[0]))
+    (await Promise.all(
+        postsWithComments.map(({kids}) => fetchItem<CommentItem>(kids[0]))
+      )
+    ).map((comment, i) => {
+      if (!comment.text) {
+        // This can happen in super rare cases (hence, no complicated retry logic)
+        // It happens because the comment was deleted. We pray that the next comment is not.
+        return fetchItem<CommentItem>(postsWithComments[i].kids[1]);
+      }
+      return comment;
+    })
   );
+
   const pairs = comments.map(
     (_, i) => [postsWithComments[i], comments[i]] as const
   );
@@ -71,4 +86,23 @@ export async function fetchData(): Promise<CardData[]> {
     })
     .flat();
   return commentsAndPosts;
+}
+
+export const getShuffledArray = (arr) => {
+  const newArr = arr.slice();
+  for (let i = newArr.length - 1; i > 0; i--) {
+    const rand = Math.floor(Math.random() * (i + 1));
+    [newArr[i], newArr[rand]] = [newArr[rand], newArr[i]];
+  }
+  return newArr;
+};
+
+export function checkMatch(
+  cards: CardData[],
+  i1: number,
+  i2: number,
+) {
+  return (
+    cards[i1].matchingId === cards[i2].id
+  );
 }

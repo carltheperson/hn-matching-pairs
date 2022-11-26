@@ -182,6 +182,17 @@ export function registerComparisonAnimation(
   observer.observe(document.body, {});
 }
 
+export function registerOutOfGameAnimation(el: HTMLElement, outOfGameAnimationState: Accessor<boolean>) {
+  createEffect(() => {
+    if (outOfGameAnimationState()) {
+      // This animation is one-way. Once you're out, you're out
+      el.animate([{opacity: "1"}, {opacity: "0"}], {duration: FLIP_DURATION}).onfinish = () => {
+        el.style.display = "none"
+      }
+    }
+  })
+}
+
 function revertibleAnimation({
                                el,
                                animationState,

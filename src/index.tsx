@@ -10,14 +10,21 @@ import {
 } from "solid-js";
 import {Portal, render} from "solid-js/web";
 import {Card} from "./card";
-import {EndPromt, LoadingPromt, MatchPromt} from "./promts";
+import {EndPrompt, LoadingPrompt, ComparisonPrompt} from "./prompts";
+import {checkMatch, fetchData, getShuffledArray} from "./data";
 
 /*
 Things left:
  [x] Nail Solid JS
  [x] Switch to webstorm
  [x] Comparison animation
- [ ] Account for `deleted: true`
+ [x] Account for `deleted: true`
+ [x] Scrollable text
+ [x] Match logic
+ [x] Remove after match
+ [ ] End screen
+ [ ] Gap
+ [ ] Flips counter
  */
 
 export interface CardData {
@@ -25,26 +32,25 @@ export interface CardData {
   id: number;
   matchingId: number;
   text: string;
-  outOfGame?: boolean;
   elRef?: HTMLDivElement;
 }
 
 function Main() {
   const [cards, {mutate: setCards}] = createResource(
-    // () => fetchData().then(getShuffledArr) as Promise<CardData[]>
-    () =>
-      new Promise<CardData[]>((r) =>
-        setTimeout(
-          () =>
-            r(
-              Array.from({length: 16}).map(
-                () =>
-                  ({outOfGame: false, text: "hi", type: "post"} as CardData)
-              )
-            ),
-          500
-        )
-      )
+    () => fetchData().then(getShuffledArray) as Promise<CardData[]>
+    // () =>
+    //   new Promise<CardData[]>((r) =>
+    //     setTimeout(
+    //       () =>
+    //         r(
+    //           Array.from({length: 16}).map(
+    //             () =>
+    //               ({outOfGame: false, text: "hi", type: "post"} as CardData)
+    //           )
+    //         ),
+    //       500
+    //     )
+    //   )
   );
 
   const cardsRefs: HTMLDivElement[] = []
@@ -72,6 +78,9 @@ function Main() {
     setRightComparedCard(null);
     setLeftComparedCard(null);
   }
+
+  const isMatch = createMemo(() => (rightComparedCard() !== null && leftComparedCard() !== null) ? checkMatch(cards(), rightComparedCard(), leftComparedCard()) : null)
+
 
   const [selectedCard, setSelectedCard] = createSignal<number | null>(null);
   const isSelected = createSelector<number, number>(selectedCard);
@@ -121,22 +130,26 @@ function Main() {
       <h1 class="title">
         <span>HN</span> Matching Pairs
       </h1>
-      <Show keyed={true} when={cards()?.length} fallback={LoadingPromt}>
+      <Show keyed={true} when={cards()?.length} fallback={LoadingPrompt}>
         <div class="cards-outer">
           <div class="cards" ref={cardsContainerRef}>
-            {/*<MatchPromt matches={matches} cards={cards}/>*/}
+            <ComparisonPrompt isMatch={isMatch}/>
             {/*<EndPromt cards={cards}/>*/}
             {cards().map((data, i) => {
               const compared = createMemo((prev) => isRightCompared(i) ? "right" : isLeftCompared(i) ? "left" : prev === undefined ? null : false);
+              const outOfGame = createMemo<boolean>((prev) => prev || (compared() ? isMatch() : false))
+              const flipped = createMemo((prev) => isFlippedToSelect(i) ? true : prev === undefined ? null : false)
+
               return (
                 <Card
                   {...data}
                   selected={createMemo(() => isSelected(i))}
-                  requestFlip={() => handleClick(i)}
-                  flipped={createMemo((prev) => isFlippedToSelect(i) ? true : prev === undefined ? null : false)}
+                  requestFlip={() => (!outOfGame() || compared()) && handleClick(i)}
+                  flipped={flipped}
                   compared={compared}
                   cardsContainerRef={cardsContainerRef}
                   setCardRef={(ref) => cardsRefs[i] = ref}
+                  outOfGame={outOfGame}
                 />
               );
             })}
@@ -147,17 +160,6 @@ function Main() {
   );
 }
 
-function isMatch(
-  matches?: [{ cardIndex: number }, { cardIndex: number }],
-  cards?: CardData[]
-) {
-  if (!matches || !cards) {
-    return false;
-  }
-  return (
-    cards[matches[0].cardIndex].matchingId === cards[matches[1].cardIndex].id
-  );
-}
 
 const root = document.querySelector("#root");
 render(() => <Main/>, root);

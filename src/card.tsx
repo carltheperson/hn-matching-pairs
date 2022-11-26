@@ -2,11 +2,11 @@ import {Accessor, createEffect, createSignal, onMount, Setter} from "solid-js";
 import {CardData} from ".";
 import {
   AnimationState, registerComparisonAnimation,
-  registerFlipAnimation,
+  registerFlipAnimation, registerOutOfGameAnimation,
   registerOverflowPreventionAnimation,
 } from "./animations";
 import {CommentIcon, PostIcon} from "./icons";
-import {TipPromt} from "./promts";
+import {TipPrompt} from "./prompts";
 import {Portal} from "solid-js/web";
 
 export function Card({
@@ -18,6 +18,7 @@ export function Card({
                        compared,
                        cardsContainerRef,
                        setCardRef,
+                       outOfGame,
                      }: CardData & {
   selected: Accessor<boolean>;
   requestFlip: () => void;
@@ -25,15 +26,16 @@ export function Card({
   compared: Accessor<"left" | "right" | false>;
   cardsContainerRef: HTMLDivElement;
   setCardRef: (ref: HTMLDivElement) => void;
+  outOfGame: Accessor<boolean>
 }) {
   let cardRef: HTMLDivElement;
   let cardChildRef: HTMLDivElement;
   let innerRef: HTMLDivElement;
-  const [outOfGame, setOutOfGame] = createSignal(false);
 
   const [flipAnimationState, setFlipAnimationState] = createSignal<AnimationState>("ended");
   const [overflowAnimationState, setOverflowAnimationState] = createSignal<AnimationState>("ended");
   const [comparisonAnimationState, setComparisonAnimationState] = createSignal<AnimationState>("ended");
+  const [outOfGameAnimationState, setOutOfGameAnimationState] = createSignal(false)
 
   onMount(() => {
     setCardRef(cardRef)
@@ -41,8 +43,12 @@ export function Card({
     registerFlipAnimation(innerRef, cardRef, flipAnimationState, setFlipAnimationState);
     registerOverflowPreventionAnimation(cardChildRef, overflowAnimationState, setOverflowAnimationState);
     registerComparisonAnimation(cardRef, cardsContainerRef, compared, comparisonAnimationState, setComparisonAnimationState);
+    registerOutOfGameAnimation(cardChildRef, outOfGameAnimationState);
 
     createEffect(() => {
+      if (outOfGame() && compared() === false) {
+        setOutOfGameAnimationState(true);
+      }
       if (compared() !== null && !flipped()) {
         setComparisonAnimationState(compared() ? "to-start" : "to-end")
         setFlipAnimationState(compared() ? "to-start" : "to-end")
@@ -59,15 +65,10 @@ export function Card({
       <div
         class="card"
         ref={cardChildRef}
-        classList={{
-          flipped: flipped() || outOfGame(),
-          "block-flips": flipped() === undefined,
-          compared: compared() !== false,
-        }}
       >
         <div class="click-filler-card"></div>
         <div class="inner" ref={innerRef}>
-          <TipPromt flipped={flipped}/>
+          <TipPrompt flipped={flipped}/>
           <div
             class="front"
             classList={{
@@ -88,7 +89,7 @@ export function Card({
               {() => {
                 let ref: HTMLDivElement;
                 const textEl = <div class="text" ref={ref}></div>;
-                ref.innerHTML = text; // Oh god I hope HN sanitizes this HTML
+                ref.innerHTML = text; // Oh god I hope HN sanitized this HTML
                 return textEl;
               }}
             </div>

@@ -107,12 +107,14 @@ body {
   height: 100%;
   position: fixed;
   top: 0;
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0, 0, 0, 0);
   z-index: 2;
+
   &.on {
     background-color: #0000001c;
     backdrop-filter: blur(0.8px);
   }
+
   &:not(.on) {
     pointer-events: none;
   }
@@ -127,9 +129,9 @@ body {
     left: $offset;
     pointer-events: none;
     background-image: linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0),
-      $background 100%
+                    to bottom,
+                    rgba(255, 255, 255, 0),
+                    $background 100%
     );
     width: calc(100% - $offset * 2);
     height: 4em;
@@ -148,6 +150,7 @@ body {
   @media screen and (min-width: 0px) and (max-width: 1600px) {
     top: 50px;
   }
+
   &.on {
     opacity: 1;
   }
@@ -166,6 +169,7 @@ body {
     -webkit-text-stroke-width: 1.5px;
     -webkit-text-stroke-color: #00000094;
   }
+
   h1:not(.is-match) {
     color: #cc2a2a;
     -webkit-text-stroke-width: 1.5px;
@@ -175,20 +179,20 @@ body {
   &:not(.on) {
     pointer-events: none;
     opacity: 0;
-    transition-delay: 0;
+    transition-delay: 0s;
   }
 }
 
-.end-promt {
+.end-prompt {
   pointer-events: none;
   transition: opacity 1s;
   position: absolute;
   z-index: 1000;
   height: 100%;
-  position: absolute;
   width: 100%;
   top: 0;
   left: 0;
+
   .text {
     color: #fa7b38;
     font-size: 2.5rem;
@@ -199,6 +203,7 @@ body {
     left: 0;
     right: 0;
     transform: translateY(-50%);
+
     .small {
       font-size: 0.8rem;
       opacity: 0.7;
@@ -207,6 +212,7 @@ body {
   }
 
   opacity: 0;
+
   &.on {
     opacity: 1;
   }
@@ -241,6 +247,7 @@ body {
       font-size: 2rem;
     }
     margin-top: 2rem;
+
     span {
       color: #ef7d44;
     }
@@ -248,7 +255,7 @@ body {
 
   .cards-outer {
     > .pointer {
-      @media screen and not (hover: none) {
+      @media screen and (not (hover: none)) {
         cursor: pointer;
       }
     }
@@ -260,12 +267,15 @@ body {
     @media screen and (min-width: 0px) and (max-width: 1000px) {
       @include grid($rows-n: 4, $cols-n: 4);
     }
+
     .cards {
       animation-name: fadeIn;
       animation-duration: 2s;
+
       .card-outer {
         position: relative;
         pointer-events: none;
+
         .card {
           width: 100%;
           height: 100%;
@@ -285,6 +295,7 @@ body {
             height: 100%;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             transform-style: preserve-3d;
+
             &:hover {
               cursor: pointer;
             }
@@ -296,6 +307,7 @@ body {
             width: 100%;
             transform: scale(0.5);
             position: absolute;
+
             &:hover {
               cursor: pointer;
             }
@@ -309,6 +321,7 @@ body {
             text-align: center;
             backface-visibility: hidden;
           }
+
           div {
             border-radius: $card-border-radius;
           }
@@ -320,6 +333,7 @@ body {
             transform: rotateY(180deg);
             word-break: break-word;
             overflow: hidden;
+
             .sub {
               box-sizing: border-box;
               height: 100%;
@@ -327,6 +341,7 @@ body {
               display: flex;
               flex-direction: column;
               overflow: hidden;
+
               .type {
                 text-transform: capitalize;
                 font-weight: 700;
@@ -334,8 +349,10 @@ body {
                 display: flex;
                 align-items: center;
                 justify-content: center;
+
                 .icon {
                   margin-bottom: -8px;
+
                   svg {
                     @media (max-width: 1600px) {
                       scale: 0.8;
@@ -343,35 +360,44 @@ body {
                     }
                   }
                 }
+
                 word-break: keep-all;
                 @media (max-width: 1600px) {
                   font-size: 1.4rem;
                 }
               }
+
               $border-width: 4px;
+
               .text {
                 flex-grow: 1;
                 margin-top: 10px;
+                overflow-y: scroll;
+                padding-bottom: 5px;
               }
+
               &.comment {
                 $background: #f6f6f0;
                 background-color: $background;
                 border: $border-width solid #ffc0a0;
+
                 .text {
                   @include fadeBottom(
-                    $offset: $border-width,
-                    $background: $background
+                          $offset: $border-width,
+                          $background: $background
                   );
                 }
               }
+
               &.post {
                 $background: #fcdbcb;
                 background-color: $background;
                 border: $border-width solid #fc935e;
+
                 .text {
                   @include fadeBottom(
-                    $offset: $border-width,
-                    $background: $background
+                          $offset: $border-width,
+                          $background: $background
                   );
                 }
               }
@@ -380,6 +406,7 @@ body {
 
           .front {
             background-color: #fa7b38;
+
             &::before {
               content: "Y";
               font-size: 10rem;
@@ -391,41 +418,20 @@ body {
             }
 
             transition: border 0.15s;
+
             &.selected {
               @include safariFriendlyOutlineBorderRadius(
-                $color: rgb(62, 62, 62)
+                      $color: rgb(62, 62, 62)
               );
               cursor: not-allowed;
             }
+
             &:not(.selected) {
               @include safariFriendlyOutlineBorderRadius(
-                $color: rgba(0, 0, 0, 0)
+                      $color: rgba(0, 0, 0, 0)
               );
             }
           }
-
-          // &.flipped {
-          //   z-index: 100;
-          //   .inner {
-          //     animation-duration: 1s;
-          //     animation-name: flip;
-          //     @include displayCard();
-          //   }
-          // }
-
-          // &:not(.block-flips):not(.flipped) {
-          //   animation-duration: 1s;
-          //   animation-name: increasedZIndex;
-          //   .inner {
-          //     animation-duration: 1s;
-          //     animation-name: flipBack;
-          //     @include displayCardReverse();
-          //   }
-          // }
-
-          // &.block-flips .inner {
-          //   @include displayCardReverse();
-          // }
         }
       }
     }
