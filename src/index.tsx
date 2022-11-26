@@ -318,7 +318,6 @@ function Main() {
             <EndPromt cards={cards}/>
             {cards().map((data, i) => {
               const compared = createMemo((prev) => isRightCompared(i) ? "right" : isLeftCompared(i) ? "left" : prev === undefined ? null : false);
-
               return (
                 <Card
                   {...data}
