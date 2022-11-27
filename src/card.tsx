@@ -48,13 +48,15 @@ export function Card({
     registerComparisonAnimation(cardRef, cardsContainerRef, compared, comparisonAnimationState, setComparisonAnimationState);
     registerOutOfGameAnimation(cardChildRef, outOfGameAnimationState);
 
-    createEffect(() => {
+
+    createEffect((oldCompared) => {
       if (createRoot(() => outOfGame()) && compared() === false) {
         setOutOfGameAnimationState(true);
         markAsFullyDone();
         return;
       }
-      if (compared() !== null && !flipped()) {
+
+      if (compared() !== null && !flipped() && oldCompared !== compared()) {
         setComparisonAnimationState(compared() ? "to-start" : "to-end")
         setFlipAnimationState(compared() ? "to-start" : "to-end")
         setOverflowAnimationState("to-end")
@@ -62,6 +64,7 @@ export function Card({
         setFlipAnimationState(flipped() ? "to-start" : "to-end")
         setOverflowAnimationState(flipped() ? "to-start" : "to-end")
       }
+      return compared();
     })
   });
 

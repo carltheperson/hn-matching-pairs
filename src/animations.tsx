@@ -14,22 +14,10 @@ import {
   Setter,
 } from "solid-js";
 
-// Animations
-
-// # Card
-// - Flip x
-// - Flip back x
-// - Avoid overflow
-// - Avoid overflow back
-
-// # Comparison
-// - Compare
-// - Compare back
-// - Remove compared cards
 
 const scale = "0.5";
 
-const ANIMATION_REVERSIAL_SPEED = 1.5
+const ANIMATION_REVERSIAL_SPEED = 1;
 
 const FLIP_DURATION = 750;
 const ANIMATIONS_OPS = {
@@ -209,7 +197,7 @@ function revertibleAnimation({
 }) {
   let animation: Animation & { towards?: AnimationState };
 
-  createEffect(() => {
+  createComputed(() => {
     if (animationState() == "to-start") {
       if (animation && animation.towards == "ended") {
         animation.playbackRate = -ANIMATION_REVERSIAL_SPEED; // This will play back the animation aka "revert" it
