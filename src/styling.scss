@@ -31,7 +31,8 @@ body {
 #root {
   overflow-y: scroll;
   overflow-x: hidden;
-  min-height: 100vh;
+  min-height: 110vh;
+  background-color: red;
 
   > div {
     margin-bottom: -200px;
