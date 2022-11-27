@@ -21,10 +21,10 @@ body {
   font-family: Verdana, Geneva, sans-serif;
   padding: 0;
   margin: 0;
-  min-width: fit-content;
-  position: fixed;
-  overflow-y: scroll;
-  width: 100%;
+  //min-width: fit-content;
+  //position: fixed;
+  //overflow-y: scroll;
+  //width: 100%;
   min-height: 100vh;
 }
 
@@ -275,10 +275,11 @@ body {
       font-size: 1rem;
       width: 100%;
       overflow: auto;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       padding-left: 1px;
       @media (min-width: 700px) {
         padding-left: 2px;
+        margin-bottom: 30px;
       }
       @media (min-width: 1200px) {
         padding-left: 3px;
@@ -302,6 +303,8 @@ body {
       @include grid($rows-n: 4, $cols-n: 4);
       margin-top: 15px;
     }
+
+
 
     .cards {
       animation-name: fadeIn;
