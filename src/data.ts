@@ -106,7 +106,6 @@ export function checkMatch(
   i1: number,
   i2: number,
 ) {
-  return true;
   return (
     cards[i1].matchingId === cards[i2].id
   );

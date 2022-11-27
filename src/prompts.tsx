@@ -1,11 +1,12 @@
 import confetti from "canvas-confetti";
 import {Accessor, createComputed, createMemo, Resource, Show} from "solid-js";
-import {CardData} from ".";
 
 export function ComparisonPrompt({
-                                   isMatch
+                                   isMatch,
+                                   onClick
                                  }: {
-  isMatch: Accessor<boolean | null>;
+  isMatch: Accessor<boolean | null>
+  onClick: () => void;
 }) {
   createComputed(() => {
     if (isMatch()) {
@@ -28,6 +29,7 @@ export function ComparisonPrompt({
       classList={{
         on: isMatch() !== null,
       }}
+      onClick={onClick}
     >
       <h1
         classList={{

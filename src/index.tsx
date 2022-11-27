@@ -143,7 +143,7 @@ function Main() {
       <Show keyed={true} when={cards()?.length} fallback={LoadingPrompt}>
         <div class="cards-outer">
           <div class="cards" ref={cardsContainerRef}>
-            <ComparisonPrompt isMatch={isMatch}/>
+            <ComparisonPrompt isMatch={isMatch} onClick={() => handleClick(-1)}/>
             <EndPrompt done={isFullyDone} flips={flips}/>
             <Show keyed={true} when={!isFullyDone()}>
               <FlipsPrompt flips={flips}/>
