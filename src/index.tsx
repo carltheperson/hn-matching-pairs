@@ -27,7 +27,7 @@ Things left:
  [x] Polish card itself
  [x] Flips counter
  [x] Link to post
- [ ] Misc
+ [x] Misc
  [ ] Readme and public
  */
 
