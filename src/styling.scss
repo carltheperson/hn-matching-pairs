@@ -25,17 +25,17 @@ body {
   //position: fixed;
   //overflow-y: scroll;
   //width: 100%;
-  min-height: 100vh;
+  //min-height: 100vh;
 }
 
 #root {
-  overflow-y: scroll;
-  overflow-x: hidden;
-  min-height: 110vh;
-  background-color: red;
+  //overflow-y: scroll;
+  //overflow-x: hidden;
+  //min-height: 100vh;
 
   > div {
-    margin-bottom: -200px;
+    //margin-bottom: -200px;
+    min-height: 100vh;
   }
 }
 
@@ -242,9 +242,8 @@ body {
 }
 
 .explainer-text {
-  position: fixed;
-  bottom: 8px;
-  right: 8px;
+  text-align: right;
+  padding: 100px 8px 8px;
   color: #909090;
 
   a {
