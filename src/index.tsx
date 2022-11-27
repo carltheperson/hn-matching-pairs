@@ -10,7 +10,7 @@ import {
 } from "solid-js";
 import {Portal, render} from "solid-js/web";
 import {Card} from "./card";
-import {EndPrompt, LoadingPrompt, ComparisonPrompt} from "./prompts";
+import {EndPrompt, LoadingPrompt, ComparisonPrompt, FlipsPrompt} from "./prompts";
 import {CARD_COUNT, checkMatch, fetchData, getShuffledArray} from "./data";
 
 /*
@@ -24,9 +24,9 @@ Things left:
  [x] Remove after match
  [x] End screen
  [x] Gap
- [ ] Polish card itself
- [ ] Flips counter
- [ ] Link to post
+ [x] Polish card itself
+ [x] Flips counter
+ [x] Link to post
  [ ] Misc
  */
 
@@ -35,6 +35,7 @@ export interface CardData {
   id: number;
   matchingId: number;
   text: string;
+  url: string;
   elRef?: HTMLDivElement;
 }
 
@@ -58,6 +59,7 @@ function Main() {
 
   const cardsRefs: HTMLDivElement[] = []
   const [fullyDones, setFullyDones] = createSignal<number[]>([])
+  const isFullyDone = createMemo(() => fullyDones().length === CARD_COUNT);
 
   const [rightComparedCard, setRightComparedCard] = createSignal<number | null>(null)
   const [leftComparedCard, setLeftComparedCard] = createSignal<number | null>(null)
@@ -91,6 +93,9 @@ function Main() {
   const [flippedToSelect, setFlippedToSelect] = createSignal<number | null>(null);
   const isFlippedToSelect = createSelector<number, number>(flippedToSelect);
 
+  const [flips, setFlips] = createSignal(0);
+  const incrementFLips = () => setFlips(f => f + 1)
+
   const handleClick = (i: number) => {
     if (rightComparedCard() !== null && leftComparedCard() !== null) {
       // We are being compared to another card. User clicking to flip indicates that they want to end the comparison
@@ -106,6 +111,7 @@ function Main() {
       if (selectedCard() === null) {
         // Nothing is selected or flipped. User wants to flip this card
         setFlippedToSelect(i);
+        incrementFLips();
       } else if (selectedCard() === i) {
         // User is not allowed to flip selected card
         return;
@@ -115,6 +121,7 @@ function Main() {
         updateCompared(i, selectedCard())
         setSelectedCard(null);
         setFlippedToSelect(null);
+        incrementFLips();
       }
     }
   };
@@ -137,7 +144,10 @@ function Main() {
         <div class="cards-outer">
           <div class="cards" ref={cardsContainerRef}>
             <ComparisonPrompt isMatch={isMatch}/>
-            <EndPrompt done={createMemo(() => fullyDones().length === CARD_COUNT)}/>
+            <EndPrompt done={isFullyDone} flips={flips}/>
+            <Show keyed={true} when={!isFullyDone()}>
+              <FlipsPrompt flips={flips}/>
+            </Show>
             {cards().map((data, i) => {
               const compared = createMemo((prev) => isRightCompared(i) ? "right" : isLeftCompared(i) ? "left" : prev === undefined ? null : false);
               const outOfGame = createMemo<boolean>((prev) => prev || (compared() ? isMatch() : false))

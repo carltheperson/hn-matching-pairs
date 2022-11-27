@@ -1,4 +1,4 @@
-import {Accessor, createEffect, createRoot, createSignal, onMount, Setter} from "solid-js";
+import {Accessor, createEffect, createRoot, createSignal, onMount, Setter, Show} from "solid-js";
 import {CardData} from ".";
 import {
   AnimationState, registerComparisonAnimation,
@@ -20,6 +20,7 @@ export function Card({
                        setCardRef,
                        outOfGame,
                        markAsFullyDone,
+                       id,
                      }: CardData & {
   selected: Accessor<boolean>;
   requestFlip: () => void;
@@ -96,6 +97,11 @@ export function Card({
                 ref.innerHTML = text; // Oh god I hope HN sanitized this HTML
                 return textEl;
               }}
+              <Show when={type === "post" && outOfGame()} keyed={true}>
+                <div class="link-to-post"><a href={"https://news.ycombinator.com/item?id=" + id} target="_blank"
+                                             onClick={e => e.stopImmediatePropagation()}>Link to
+                  post</a></div>
+              </Show>
             </div>
           </div>
         </div>

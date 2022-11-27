@@ -40,7 +40,7 @@ export function ComparisonPrompt({
   );
 }
 
-export function EndPrompt({done}: { done: Accessor<boolean> }) {
+export function EndPrompt({done, flips}: { done: Accessor<boolean>; flips: Accessor<number> }) {
   return (
     <div
       class="end-prompt"
@@ -49,17 +49,17 @@ export function EndPrompt({done}: { done: Accessor<boolean> }) {
       }}
     >
       <div class="text">
-        <div>Game Over</div>
-        <div>Well Done!</div>
+        <div>Game Over. Well done!</div>
+        <div>Completed in {flips()} flips</div>
         <div class="small">(refresh to try again)</div>
       </div>
     </div>
   );
 }
 
-export function TipPrompt({flipped}: { flipped: Accessor<Boolean> }) {
+export function TipPrompt({flipped}: { flipped: Accessor<boolean> }) {
   return (
-    <Show when={flipped()}>
+    <Show keyed={true} when={flipped()}>
       {() => {
         if (localStorage["shown-tip"]) {
           return;
@@ -73,4 +73,8 @@ export function TipPrompt({flipped}: { flipped: Accessor<Boolean> }) {
 
 export function LoadingPrompt() {
   return <div class="loading-prompt">Loading ...</div>;
+}
+
+export function FlipsPrompt({flips}: { flips: Accessor<number> }) {
+  return <div class="flips-prompt">Flips: {flips()}</div>;
 }
