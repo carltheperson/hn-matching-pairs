@@ -28,6 +28,7 @@ Things left:
  [x] Flips counter
  [x] Link to post
  [ ] Misc
+ [ ] Readme and public
  */
 
 export interface CardData {
@@ -121,6 +122,8 @@ function Main() {
           classList={{on: flippedToSelect() !== null || (rightComparedCard() !== null && leftComparedCard() !== null)}}
           onClick={() => handleClick(-1)}
         ></div>
+        <div class="explainer-text">Not a real <a href="https://www.ycombinator.com">Y Combinator</a> thing. <a
+          href="https://github.com/carltheperson/hn-matching-pairs">Code</a></div>
       </Portal>
       <h1 class="title">
         <div>

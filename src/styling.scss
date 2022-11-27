@@ -237,6 +237,17 @@ body {
   color: #909090;
 }
 
+.explainer-text {
+  position: fixed;
+  bottom: 8px;
+  right: 8px;
+  color: #909090;
+
+  a {
+    color: #909090;
+  }
+}
+
 #root > div {
   display: flex;
   justify-content: center;
