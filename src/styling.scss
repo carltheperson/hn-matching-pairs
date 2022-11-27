@@ -54,7 +54,10 @@ body {
 @mixin grid($rows-n, $cols-n) {
   $full-width: min(100vw, 1800px);
 
-  $gap: calc(0.0225 * $full-width);
+  $gap: min(calc(0.0225 * 100vw), calc(0.0225 * 1800vw));
+  // Note: The above line used to be written like this
+  // $gap: calc(0.0225 * $full-width);
+  // This broke parcel build with no errors printed
 
   $width: min($card-width, calc(($full-width - ($gap * ($cols-n))) / $cols-n));
   $height: calc($width * $card-height-ratio);
