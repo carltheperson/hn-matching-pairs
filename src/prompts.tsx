@@ -74,7 +74,7 @@ export function TipPrompt({flipped}: { flipped: Accessor<boolean> }) {
 }
 
 export function LoadingPrompt() {
-  return <div class="loading-prompt">Loading ...</div>;
+  return <div class="loading-prompt cards-outer">Loading ...</div>;
 }
 
 export function FlipsPrompt({flips}: { flips: Accessor<number> }) {
