@@ -7,17 +7,16 @@ $card-flip-scale-reverse: calc(1 / $card-flip-scale);
 
 $card-border-radius: 5px;
 
+$mobile-break-point: 1000px;
+
 html {
-  font-size: 14px;
+  font-size: 13px;
   @media (min-width: 768px) {
     font-size: 16px;
   }
-  @media (min-width: 1024px) {
-    font-size: 18px;
-  }
-  // @media (min-width: 1280px) {
-  //   font-size: 20px;
-  // }
+  //@media (min-width: 1024px) {
+  //  font-size: 18px;
+  //}
 }
 
 body {
@@ -28,8 +27,6 @@ body {
   min-width: fit-content;
   position: fixed;
   overflow-y: scroll;
-  padding: 0;
-  margin: 0;
   width: 100%;
   min-height: 100vh;
 }
@@ -58,10 +55,11 @@ body {
 }
 
 @mixin grid($rows-n, $cols-n) {
-  //$gap: calc(10px + 2vw);
-  $gap: calc(2.25vw);
+  $full-width: min(100vw, 1800px);
 
-  $width: min($card-width, calc((100vw - ($gap * ($cols-n))) / $cols-n));
+  $gap: calc(0.0225 * $full-width);
+
+  $width: min($card-width, calc(($full-width - ($gap * ($cols-n))) / $cols-n));
   $height: calc($width * $card-height-ratio);
 
   $width-adjusted: calc($width * $card-flip-scale-reverse);
@@ -144,10 +142,10 @@ body {
   z-index: 1000;
   width: 100%;
   text-align: center;
-  @media (min-width: 1600px) {
+  @media (min-width: $mobile-break-point) {
     top: -100px;
   }
-  @media screen and (min-width: 0px) and (max-width: 1600px) {
+  @media screen and (min-width: 0px) and (max-width: $mobile-break-point) {
     top: 50px;
   }
 
@@ -218,7 +216,7 @@ body {
   }
 }
 
-.tip-promt {
+.tip-prompt {
   position: absolute;
   bottom: -40px;
   text-shadow: 0 0 15px rgba(0, 0, 0, 0.671);
@@ -227,7 +225,7 @@ body {
   transform: scale(-1, 1);
 }
 
-.loading-promt {
+.loading-prompt {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -260,11 +258,11 @@ body {
       }
     }
 
-    @media (min-width: 1000px) {
+    @media (min-width: $mobile-break-point) {
       @include grid($rows-n: 2, $cols-n: 8);
       margin-top: 50px;
     }
-    @media screen and (min-width: 0px) and (max-width: 1000px) {
+    @media screen and (min-width: 0px) and (max-width: $mobile-break-point) {
       @include grid($rows-n: 4, $cols-n: 4);
     }
 
@@ -351,12 +349,17 @@ body {
                 justify-content: center;
 
                 .icon {
-                  margin-bottom: -8px;
-
                   svg {
-                    @media (max-width: 1600px) {
-                      scale: 0.8;
-                      margin-right: -10%;
+                    width: 2rem;
+                    height: 2rem;
+                    margin-bottom: -0.6rem;
+
+                    &.post-icon {
+                      margin-bottom: -0.5rem;
+                    }
+
+                    &.comment-icon {
+                      margin-right: 0.12rem;
                     }
                   }
                 }
@@ -371,7 +374,7 @@ body {
 
               .text {
                 flex-grow: 1;
-                margin-top: 10px;
+                margin-top: 0.5rem;
                 overflow-y: scroll;
                 padding-bottom: 5px;
               }
@@ -429,33 +432,6 @@ body {
         }
       }
     }
-  }
-}
-
-@keyframes flip {
-  0% {
-    @include displayCardReverse();
-  }
-  100% {
-    @include displayCard();
-  }
-}
-
-@keyframes flipBack {
-  0% {
-    @include displayCard();
-  }
-  100% {
-    @include displayCardReverse();
-  }
-}
-
-@keyframes increasedZIndex {
-  0% {
-    z-index: 100;
-  }
-  100% {
-    z-index: 100;
   }
 }
 

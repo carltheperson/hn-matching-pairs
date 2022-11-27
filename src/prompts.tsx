@@ -65,12 +65,12 @@ export function TipPrompt({flipped}: { flipped: Accessor<Boolean> }) {
           return;
         }
         localStorage["shown-tip"] = "1";
-        return <div class="tip-promt">Tip: Click anywhere to close card</div>;
+        return <div class="tip-prompt">Tip: Click anywhere to close card</div>;
       }}
     </Show>
   );
 }
 
 export function LoadingPrompt() {
-  return <div class="loading-promt">Loading ...</div>;
+  return <div class="loading-prompt">Loading ...</div>;
 }
