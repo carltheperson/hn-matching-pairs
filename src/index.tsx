@@ -22,9 +22,12 @@ Things left:
  [x] Scrollable text
  [x] Match logic
  [x] Remove after match
- [ ] End screen
- [ ] Gap
+ [x] End screen
+ [x] Gap
+ [ ] Polish card itself
  [ ] Flips counter
+ [ ] Link to post
+ [ ] Misc
  */
 
 export interface CardData {
