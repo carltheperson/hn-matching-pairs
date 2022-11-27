@@ -7,17 +7,13 @@ $card-flip-scale-reverse: calc(1 / $card-flip-scale);
 
 $card-border-radius: 5px;
 
+$mobile-break-point: 1000px;
+
 html {
-  font-size: 14px;
+  font-size: 13px;
   @media (min-width: 768px) {
-    font-size: 16px;
+    font-size: 15px;
   }
-  @media (min-width: 1024px) {
-    font-size: 18px;
-  }
-  // @media (min-width: 1280px) {
-  //   font-size: 20px;
-  // }
 }
 
 body {
@@ -28,8 +24,6 @@ body {
   min-width: fit-content;
   position: fixed;
   overflow-y: scroll;
-  padding: 0;
-  margin: 0;
   width: 100%;
   min-height: 100vh;
 }
@@ -44,8 +38,7 @@ body {
   }
 }
 
-@mixin safariFriendlyOutlineBorderRadius {
-  content: "";
+@mixin safariFriendlyOutlineBorderRadius($color) {
   position: absolute;
   $thinkness: 7px;
   $offset: 1px;
@@ -54,14 +47,16 @@ body {
   right: $thinkness-and-offset-inverse;
   bottom: $thinkness-and-offset-inverse;
   left: $thinkness-and-offset-inverse;
-  border: $thinkness solid rgb(62, 62, 62);
+  border: $thinkness solid $color;
   border-radius: calc($card-border-radius + $offset);
 }
 
 @mixin grid($rows-n, $cols-n) {
-  $gap: 2.25vw;
+  $full-width: min(100vw, 1800px);
 
-  $width: min($card-width, calc((100vw - ($gap * ($cols-n))) / $cols-n));
+  $gap: calc(0.0225 * $full-width);
+
+  $width: min($card-width, calc(($full-width - ($gap * ($cols-n))) / $cols-n));
   $height: calc($width * $card-height-ratio);
 
   $width-adjusted: calc($width * $card-flip-scale-reverse);
@@ -101,17 +96,22 @@ body {
 }
 
 .overlay {
-  transition: background-color 1s;
+  transition: background-color 0.75s;
+  transition-timing-function: ease-in;
   width: 100%;
   height: 100%;
   position: fixed;
   top: 0;
+  background-color: rgba(0, 0, 0, 0);
+  z-index: 2;
+
   &.on {
     background-color: #0000001c;
     backdrop-filter: blur(0.8px);
   }
-  pointer-events: none;
+
   &:not(.on) {
+    pointer-events: none;
   }
 }
 
@@ -124,9 +124,9 @@ body {
     left: $offset;
     pointer-events: none;
     background-image: linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0),
-      $background 100%
+                    to bottom,
+                    rgba(255, 255, 255, 0),
+                    $background 100%
     );
     width: calc(100% - $offset * 2);
     height: 4em;
@@ -139,12 +139,13 @@ body {
   z-index: 1000;
   width: 100%;
   text-align: center;
-  @media (min-width: 1600px) {
+  @media (min-width: $mobile-break-point) {
     top: -100px;
   }
-  @media screen and (min-width: 0px) and (max-width: 1600px) {
+  @media screen and (min-width: 0px) and (max-width: $mobile-break-point) {
     top: 50px;
   }
+
   &.on {
     opacity: 1;
   }
@@ -163,6 +164,7 @@ body {
     -webkit-text-stroke-width: 1.5px;
     -webkit-text-stroke-color: #00000094;
   }
+
   h1:not(.is-match) {
     color: #cc2a2a;
     -webkit-text-stroke-width: 1.5px;
@@ -172,23 +174,23 @@ body {
   &:not(.on) {
     pointer-events: none;
     opacity: 0;
-    transition-delay: 0;
+    transition-delay: 0s;
   }
 }
 
-.end-promt {
+.end-prompt {
   pointer-events: none;
   transition: opacity 1s;
   position: absolute;
   z-index: 1000;
   height: 100%;
-  position: absolute;
   width: 100%;
   top: 0;
   left: 0;
+
   .text {
     color: #fa7b38;
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 700;
     text-align: center;
     position: absolute;
@@ -196,6 +198,7 @@ body {
     left: 0;
     right: 0;
     transform: translateY(-50%);
+
     .small {
       font-size: 0.8rem;
       opacity: 0.7;
@@ -204,12 +207,13 @@ body {
   }
 
   opacity: 0;
+
   &.on {
     opacity: 1;
   }
 }
 
-.tip-promt {
+.tip-prompt {
   position: absolute;
   bottom: -40px;
   text-shadow: 0 0 15px rgba(0, 0, 0, 0.671);
@@ -218,12 +222,30 @@ body {
   transform: scale(-1, 1);
 }
 
-.loading-promt {
+.loading-prompt {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 50vh;
   color: #909090;
+}
+
+.flips-prompt {
+  position: absolute;
+  top: -1.9rem;
+  font-size: 1rem;
+  color: #909090;
+}
+
+.explainer-text {
+  position: fixed;
+  bottom: 8px;
+  right: 8px;
+  color: #909090;
+
+  a {
+    color: #909090;
+  }
 }
 
 #root > div {
@@ -232,36 +254,60 @@ body {
   flex-direction: column;
 
   .title {
-    text-align: center;
+    text-align: left;
     font-size: 3.5rem;
+    margin-right: auto;
+    margin-left: auto;
     @media (max-width: 600px) {
       font-size: 2rem;
     }
     margin-top: 2rem;
+
     span {
       color: #ef7d44;
     }
+
+    .sub-title {
+      color: #909090;
+      font-size: 1rem;
+      width: 100%;
+      overflow: auto;
+      margin-bottom: 30px;
+      padding-left: 1px;
+      @media (min-width: 700px) {
+        padding-left: 2px;
+      }
+      @media (min-width: 1200px) {
+        padding-left: 3px;
+      }
+    }
+
   }
 
   .cards-outer {
     > .pointer {
-      @media screen and not (hover: none) {
+      @media screen and (not (hover: none)) {
         cursor: pointer;
       }
     }
 
-    @media (min-width: 1600px) {
+    @media (min-width: $mobile-break-point) {
       @include grid($rows-n: 2, $cols-n: 8);
       margin-top: 50px;
     }
-    @media screen and (min-width: 0px) and (max-width: 1600px) {
+    @media screen and (min-width: 0px) and (max-width: $mobile-break-point) {
       @include grid($rows-n: 4, $cols-n: 4);
+      margin-top: 15px;
     }
+
     .cards {
       animation-name: fadeIn;
       animation-duration: 2s;
+
       .card-outer {
         position: relative;
+        pointer-events: none;
+
         .card {
           width: 100%;
           height: 100%;
@@ -272,15 +318,31 @@ body {
           justify-content: center;
           align-items: center;
           color: white;
-
           position: relative;
           perspective: 500px;
+
           .inner {
+            pointer-events: all;
             width: 100%;
             height: 100%;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            transition: transform 1s;
             transform-style: preserve-3d;
+
+            &:hover {
+              cursor: pointer;
+            }
+          }
+
+          .click-filler-card {
+            pointer-events: all;
+            height: 100%;
+            width: 100%;
+            transform: scale(0.5);
+            position: absolute;
+
+            &:hover {
+              cursor: pointer;
+            }
           }
 
           .back,
@@ -291,6 +353,7 @@ body {
             text-align: center;
             backface-visibility: hidden;
           }
+
           div {
             border-radius: $card-border-radius;
           }
@@ -302,6 +365,7 @@ body {
             transform: rotateY(180deg);
             word-break: break-word;
             overflow: hidden;
+
             .sub {
               box-sizing: border-box;
               height: 100%;
@@ -309,6 +373,7 @@ body {
               display: flex;
               flex-direction: column;
               overflow: hidden;
+
               .type {
                 text-transform: capitalize;
                 font-weight: 700;
@@ -316,44 +381,69 @@ body {
                 display: flex;
                 align-items: center;
                 justify-content: center;
+
                 .icon {
-                  margin-bottom: -8px;
                   svg {
-                    @media (max-width: 1600px) {
-                      scale: 0.8;
-                      margin-right: -10%;
+                    width: 2rem;
+                    height: 2rem;
+                    margin-bottom: -0.6rem;
+
+                    &.post-icon {
+                      margin-bottom: -0.5rem;
+                    }
+
+                    &.comment-icon {
+                      margin-right: 0.12rem;
                     }
                   }
                 }
+
                 word-break: keep-all;
                 @media (max-width: 1600px) {
                   font-size: 1.4rem;
                 }
               }
+
               $border-width: 4px;
+
               .text {
                 flex-grow: 1;
-                margin-top: 10px;
+                margin-top: 0.5rem;
+                overflow-y: scroll;
+                padding-bottom: 5px;
               }
+
+              .link-to-post {
+                z-index: 10;
+
+                a {
+                  color: #dc7845;
+                  padding: 20px 20px 5px 20px;
+                }
+              }
+
               &.comment {
                 $background: #f6f6f0;
                 background-color: $background;
-                border: $border-width solid #ffc0a0;
+                border: $border-width solid #fc935e;
+
                 .text {
                   @include fadeBottom(
-                    $offset: $border-width,
-                    $background: $background
+                          $offset: $border-width,
+                          $background: $background
                   );
                 }
               }
+
               &.post {
                 $background: #fcdbcb;
                 background-color: $background;
                 border: $border-width solid #fc935e;
+
                 .text {
                   @include fadeBottom(
-                    $offset: $border-width,
-                    $background: $background
+                          $offset: $border-width,
+                          $background: $background
                   );
                 }
               }
@@ -362,6 +452,7 @@ body {
 
           .front {
             background-color: #fa7b38;
+
             &::before {
               content: "Y";
               font-size: 10rem;
@@ -371,66 +462,19 @@ body {
               left: 50%;
               transform: translateY(-50%) translateX(-50%);
             }
-            transition: outline-color 0.2s;
-            outline: 9px solid rgba(0, 0, 0, 0);
+
+            transition: border 0.15s;
 
             &.selected {
-              @include safariFriendlyOutlineBorderRadius();
+              @include safariFriendlyOutlineBorderRadius(
+                      $color: rgb(62, 62, 62)
+              );
+              cursor: not-allowed;
             }
-          }
-
-          &.flipped {
-            z-index: 100;
-            .inner {
-              animation-duration: 1s;
-              animation-name: flip;
-              @include displayCard();
-            }
-          }
-
-          &:not(.block-flips):not(.flipped) {
-            animation-duration: 1s;
-            animation-name: increasedZIndex;
-            .inner {
-              animation-duration: 1s;
-              animation-name: flipBack;
-              @include displayCardReverse();
-            }
-          }
-
-          &.block-flips .inner {
-            @include displayCardReverse();
           }
         }
       }
     }
-  }
-}
-
-@keyframes flip {
-  0% {
-    @include displayCardReverse();
-  }
-  100% {
-    @include displayCard();
-  }
-}
-
-@keyframes flipBack {
-  0% {
-    @include displayCard();
-  }
-  100% {
-    @include displayCardReverse();
-  }
-}
-
-@keyframes increasedZIndex {
-  0% {
-    z-index: 100;
-  }
-  100% {
-    z-index: 100;
   }
 }
 
