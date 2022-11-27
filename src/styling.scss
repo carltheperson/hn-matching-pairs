@@ -243,8 +243,10 @@ body {
   flex-direction: column;
 
   .title {
-    text-align: center;
+    text-align: left;
     font-size: 3.5rem;
+    margin-right: auto;
+    margin-left: auto;
     @media (max-width: 600px) {
       font-size: 2rem;
     }
@@ -253,6 +255,22 @@ body {
     span {
       color: #ef7d44;
     }
+
+    .sub-title {
+      color: #909090;
+      font-size: 1rem;
+      width: 100%;
+      overflow: auto;
+      margin-bottom: 30px;
+      padding-left: 1px;
+      @media (min-width: 700px) {
+        padding-left: 2px;
+      }
+      @media (min-width: 1200px) {
+        padding-left: 3px;
+      }
+    }
+
   }
 
   .cards-outer {

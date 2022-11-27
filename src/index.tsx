@@ -40,22 +40,7 @@ export interface CardData {
 }
 
 function Main() {
-  const [cards, {mutate: setCards}] = createResource(
-    () => fetchData().then(getShuffledArray) as Promise<CardData[]>
-    // () =>
-    //   new Promise<CardData[]>((r) =>
-    //     setTimeout(
-    //       () =>
-    //         r(
-    //           Array.from({length: 16}).map(
-    //             () =>
-    //               ({outOfGame: false, text: "hi", type: "post"} as CardData)
-    //           )
-    //         ),
-    //       500
-    //     )
-    //   )
-  );
+  const [cards] = createResource(() => fetchData().then(getShuffledArray) as Promise<CardData[]>);
 
   const cardsRefs: HTMLDivElement[] = []
   const [fullyDones, setFullyDones] = createSignal<number[]>([])
@@ -138,7 +123,10 @@ function Main() {
         ></div>
       </Portal>
       <h1 class="title">
-        <span>HN</span> Matching Pairs
+        <div>
+          <div><span>HN</span> Matching Pairs</div>
+        </div>
+        <div class="sub-title">Match HN comments to posts</div>
       </h1>
       <Show keyed={true} when={cards()?.length} fallback={LoadingPrompt}>
         <div class="cards-outer">
