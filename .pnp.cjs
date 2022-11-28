@@ -29,6 +29,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",\
           "packageDependencies": [\
             ["@babel/core", "npm:7.20.5"],\
+            ["@parcel/core", "npm:2.8.0"],\
             ["@parcel/packager-raw-url", "npm:2.8.0"],\
             ["@parcel/transformer-sass", "npm:2.8.0"],\
             ["@parcel/transformer-webmanifest", "npm:2.8.0"],\
@@ -1937,6 +1938,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["client", "workspace:."],\
             ["@babel/core", "npm:7.20.5"],\
+            ["@parcel/core", "npm:2.8.0"],\
             ["@parcel/packager-raw-url", "npm:2.8.0"],\
             ["@parcel/transformer-sass", "npm:2.8.0"],\
             ["@parcel/transformer-webmanifest", "npm:2.8.0"],\
@@ -3294,6 +3296,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["v8-compile-cache", "npm:2.3.0"]\
           ],\
           "packagePeers": [\
+            "@parcel/core",\
             "@types/parcel__core"\
           ],\
           "linkType": "HARD"\

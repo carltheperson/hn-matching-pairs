@@ -553,7 +553,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@parcel/core@npm:2.8.0":
+"@parcel/core@npm:2.8.0, @parcel/core@npm:^2.8.0":
   version: 2.8.0
   resolution: "@parcel/core@npm:2.8.0"
   dependencies:
@@ -1536,6 +1536,7 @@ __metadata:
   resolution: "client@workspace:."
   dependencies:
     "@babel/core": ^7.12.0
+    "@parcel/core": ^2.8.0
     "@parcel/packager-raw-url": 2.8.0
     "@parcel/transformer-sass": 2.8.0
     "@parcel/transformer-webmanifest": 2.8.0
