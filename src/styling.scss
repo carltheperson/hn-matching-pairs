@@ -238,6 +238,9 @@ body {
 
 .explainer-text {
   text-align: right;
+  @media screen and (max-width: $mobile-break-point) {
+    text-align: center;
+  }
   padding: 100px 8px 8px;
   color: #909090;
 
@@ -411,7 +414,7 @@ body {
                 flex-grow: 1;
                 margin-top: 0.5rem;
                 overflow-y: scroll;
-                padding-bottom: 5px;
+                padding-bottom: 8px;
               }
 
               .link-to-post {
