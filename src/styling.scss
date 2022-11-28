@@ -135,6 +135,10 @@ body {
     );
     width: calc(100% - $offset * 2);
     height: 4em;
+    // Safari you better behave
+    -webkit-transform:translate3d(0,0,0);
+    -webkit-backface-visibility: hidden;
+    -webkit-transform-style: preserve-3d;
   }
 }
 
@@ -376,7 +380,7 @@ body {
             .sub {
               box-sizing: border-box;
               height: 100%;
-              padding: 5px;
+              padding: 5px 5px 0;
               display: flex;
               flex-direction: column;
               overflow: hidden;
