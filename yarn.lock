@@ -812,6 +812,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@parcel/packager-raw-url@npm:2.8.0":
+  version: 2.8.0
+  resolution: "@parcel/packager-raw-url@npm:2.8.0"
+  dependencies:
+    "@parcel/plugin": 2.8.0
+    "@parcel/utils": 2.8.0
+  checksum: 00677c983f47ee7311809ad70ba440d3c3dd020bec87383879333f999130e486d4708a2386c1b0cec25ce37b347ce2a6f0fa80675972c6ce112d18d143b13379
+  languageName: node
+  linkType: hard
+
 "@parcel/packager-raw@npm:2.8.0":
   version: 2.8.0
   resolution: "@parcel/packager-raw@npm:2.8.0"
@@ -1095,6 +1105,18 @@ __metadata:
     posthtml-render: ^3.0.0
     semver: ^5.7.1
   checksum: 644bf4bd560484714c51112b89164543462c41633cfcbcfb2f43cab2158b6a576885bac73dc865d7dd9da4667213120f9887ef8a722a9c5c5fa2f19726007875
+  languageName: node
+  linkType: hard
+
+"@parcel/transformer-webmanifest@npm:2.8.0":
+  version: 2.8.0
+  resolution: "@parcel/transformer-webmanifest@npm:2.8.0"
+  dependencies:
+    "@mischnic/json-sourcemap": ^0.1.0
+    "@parcel/diagnostic": 2.8.0
+    "@parcel/plugin": 2.8.0
+    "@parcel/utils": 2.8.0
+  checksum: 9c85ecf2ef206bdfda495b8af85c4da56d54b7e46c55ec040c49c27dc2fa3b5bacdce0c46fe53f14009fc59c6ed9ca3bac94075ed54f686890b4cc713a017ad1
   languageName: node
   linkType: hard
 
@@ -1514,7 +1536,9 @@ __metadata:
   resolution: "client@workspace:."
   dependencies:
     "@babel/core": ^7.12.0
+    "@parcel/packager-raw-url": 2.8.0
     "@parcel/transformer-sass": 2.8.0
+    "@parcel/transformer-webmanifest": 2.8.0
     "@types/canvas-confetti": ^1.6.0
     babel-preset-solid: ^1.6.2
     canvas-confetti: ^1.6.0

@@ -29,7 +29,9 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",\
           "packageDependencies": [\
             ["@babel/core", "npm:7.20.2"],\
+            ["@parcel/packager-raw-url", "npm:2.8.0"],\
             ["@parcel/transformer-sass", "npm:2.8.0"],\
+            ["@parcel/transformer-webmanifest", "npm:2.8.0"],\
             ["@types/canvas-confetti", "npm:1.6.0"],\
             ["babel-preset-solid", "virtual:67bccc7d0bcfa1230f52b04f252953235f3247e8df364142a4b7724e7369b822323dc3148cf3825512a8c0b70e04e7501cbd67f5ac8193999d7bc7a9f219cccb#npm:1.6.2"],\
             ["canvas-confetti", "npm:1.6.0"],\
@@ -1073,6 +1075,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["@parcel/packager-raw-url", [\
+        ["npm:2.8.0", {\
+          "packageLocation": "./.yarn/cache/@parcel-packager-raw-url-npm-2.8.0-ef3c57fd60-00677c983f.zip/node_modules/@parcel/packager-raw-url/",\
+          "packageDependencies": [\
+            ["@parcel/packager-raw-url", "npm:2.8.0"],\
+            ["@parcel/plugin", "npm:2.8.0"],\
+            ["@parcel/utils", "npm:2.8.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["@parcel/packager-svg", [\
         ["npm:2.8.0", {\
           "packageLocation": "./.yarn/cache/@parcel-packager-svg-npm-2.8.0-abec217375-ce1b8a4ef5.zip/node_modules/@parcel/packager-svg/",\
@@ -1390,6 +1403,19 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["posthtml-parser", "npm:0.10.2"],\
             ["posthtml-render", "npm:3.0.0"],\
             ["semver", "npm:5.7.1"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@parcel/transformer-webmanifest", [\
+        ["npm:2.8.0", {\
+          "packageLocation": "./.yarn/cache/@parcel-transformer-webmanifest-npm-2.8.0-9656f2ae34-9c85ecf2ef.zip/node_modules/@parcel/transformer-webmanifest/",\
+          "packageDependencies": [\
+            ["@parcel/transformer-webmanifest", "npm:2.8.0"],\
+            ["@mischnic/json-sourcemap", "npm:0.1.0"],\
+            ["@parcel/diagnostic", "npm:2.8.0"],\
+            ["@parcel/plugin", "npm:2.8.0"],\
+            ["@parcel/utils", "npm:2.8.0"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -1911,7 +1937,9 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["client", "workspace:."],\
             ["@babel/core", "npm:7.20.2"],\
+            ["@parcel/packager-raw-url", "npm:2.8.0"],\
             ["@parcel/transformer-sass", "npm:2.8.0"],\
+            ["@parcel/transformer-webmanifest", "npm:2.8.0"],\
             ["@types/canvas-confetti", "npm:1.6.0"],\
             ["babel-preset-solid", "virtual:67bccc7d0bcfa1230f52b04f252953235f3247e8df364142a4b7724e7369b822323dc3148cf3825512a8c0b70e04e7501cbd67f5ac8193999d7bc7a9f219cccb#npm:1.6.2"],\
             ["canvas-confetti", "npm:1.6.0"],\
