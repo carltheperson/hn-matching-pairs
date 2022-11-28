@@ -1,23 +1,16 @@
 import {
   Accessor,
   createComputed,
-  createContext,
   createEffect,
   createMemo,
-  createReaction,
-  createRenderEffect,
-  createResource,
-  createRoot,
   createSignal,
-  createUniqueId,
-  onCleanup, onMount,
   Setter,
 } from "solid-js";
 
 
 const scale = "0.5";
 
-const ANIMATION_REVERSIAL_SPEED = 1;
+const ANIMATION_REVERSAL_SPEED = 1;
 
 const FLIP_DURATION = 750;
 const ANIMATIONS_OPS = {
@@ -31,7 +24,7 @@ function applyStyles(el: HTMLElement, styles: Record<string, string>) {
 
 export type AnimationState = "ended" | "started" | "to-end" | "to-start";
 
-// Create a util called revartable animation
+// Create a util called revertible animation
 export function registerFlipAnimation(
   inner: HTMLElement,
   outer: HTMLElement,
@@ -200,7 +193,7 @@ function revertibleAnimation({
   createComputed(() => {
     if (animationState() == "to-start") {
       if (animation && animation.towards == "ended") {
-        animation.playbackRate = -ANIMATION_REVERSIAL_SPEED; // This will play back the animation aka "revert" it
+        animation.playbackRate = -ANIMATION_REVERSAL_SPEED; // This will play back the animation aka "revert" it
         const scopedAnimation = animation;
         animation.onfinish = () => {
           if (animation == scopedAnimation) {
@@ -221,7 +214,7 @@ function revertibleAnimation({
       };
     } else if (animationState() == "to-end") {
       if (animation && animation.towards == "started") {
-        animation.playbackRate = -ANIMATION_REVERSIAL_SPEED; // This will play back the animation aka "revert" it
+        animation.playbackRate = -ANIMATION_REVERSAL_SPEED; // This will play back the animation aka "revert" it
         const scopedAnimation = animation;
         animation.onfinish = () => {
           if (scopedAnimation == animation) {

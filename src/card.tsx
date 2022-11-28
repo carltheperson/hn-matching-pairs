@@ -7,7 +7,6 @@ import {
 } from "./animations";
 import {CommentIcon, PostIcon} from "./icons";
 import {TipPrompt} from "./prompts";
-import {Portal} from "solid-js/web";
 
 export function Card({
                        text,

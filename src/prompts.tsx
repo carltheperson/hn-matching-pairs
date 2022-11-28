@@ -1,5 +1,5 @@
 import confetti from "canvas-confetti";
-import {Accessor, createComputed, createMemo, Resource, Show} from "solid-js";
+import {Accessor, createComputed, createMemo, Show} from "solid-js";
 
 export function ComparisonPrompt({
                                    isMatch,
