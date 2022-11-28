@@ -4,7 +4,7 @@
 
 <p align="center"><img alt="Screenshot" src="preview.png"/></p>
 
-<h4 align="center"><a href="https://hn-matching-pairs.web.app"><b>Play game</b></a></h4>
+<p align="center"><a href="https://hn-matching-pairs.web.app"><b>Play game</b></a></p>
 
 # Gameplay
 
