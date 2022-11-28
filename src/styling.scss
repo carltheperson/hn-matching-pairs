@@ -21,20 +21,10 @@ body {
   font-family: Verdana, Geneva, sans-serif;
   padding: 0;
   margin: 0;
-  //min-width: fit-content;
-  //position: fixed;
-  //overflow-y: scroll;
-  //width: 100%;
-  //min-height: 100vh;
 }
 
 #root {
-  //overflow-y: scroll;
-  //overflow-x: hidden;
-  //min-height: 100vh;
-
   > div {
-    //margin-bottom: -200px;
     overflow-x: hidden;
     min-height: 100vh;
   }
@@ -42,14 +32,14 @@ body {
 
 @mixin safariFriendlyOutlineBorderRadius($color) {
   position: absolute;
-  $thinkness: 7px;
+  $thickness: 7px;
   $offset: 1px;
-  $thinkness-and-offset-inverse: calc(-1 * ($thinkness + $offset));
-  top: $thinkness-and-offset-inverse;
-  right: $thinkness-and-offset-inverse;
-  bottom: $thinkness-and-offset-inverse;
-  left: $thinkness-and-offset-inverse;
-  border: $thinkness solid $color;
+  $thickness-and-offset-inverse: calc(-1 * ($thickness + $offset));
+  top: $thickness-and-offset-inverse;
+  right: $thickness-and-offset-inverse;
+  bottom: $thickness-and-offset-inverse;
+  left: $thickness-and-offset-inverse;
+  border: $thickness solid $color;
   border-radius: calc($card-border-radius + $offset);
 }
 
@@ -425,6 +415,7 @@ body {
               }
 
               .link-to-post {
+                margin-bottom: 5px;
                 z-index: 10;
 
                 a {

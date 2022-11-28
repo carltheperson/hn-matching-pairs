@@ -82,8 +82,8 @@ export function Card({
             classList={{
               selected:
                 selected() &&
-                (flipAnimationState?.() === "ended" ||
-                  flipAnimationState?.() === "to-end"),
+                (flipAnimationState() === "ended" ||
+                  flipAnimationState() === "to-end"),
             }}
           ></div>
           <div class="back">
@@ -97,6 +97,11 @@ export function Card({
               {() => {
                 let ref: HTMLDivElement;
                 const textEl = <div class="text" ref={ref}></div>;
+                createEffect(() => {
+                  if (flipAnimationState() === "ended" && comparisonAnimationState() === "ended") {
+                    ref.scroll({top: 0}); // User might have messed with the card scrolling which we should reset
+                  }
+                })
                 ref.innerHTML = text; // Oh god I hope HN sanitized this HTML
                 return textEl;
               }}
