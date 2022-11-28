@@ -1,35 +1,14 @@
 import {
-  createComputed,
-  createEffect,
   createMemo,
   createResource,
   createSelector,
   createSignal,
-  onCleanup,
   Show,
 } from "solid-js";
 import {Portal, render} from "solid-js/web";
 import {Card} from "./card";
 import {EndPrompt, LoadingPrompt, ComparisonPrompt, FlipsPrompt} from "./prompts";
 import {CARD_COUNT, checkMatch, fetchData, getShuffledArray} from "./data";
-
-/*
-Things left:
- [x] Nail Solid JS
- [x] Switch to webstorm
- [x] Comparison animation
- [x] Account for `deleted: true`
- [x] Scrollable text
- [x] Match logic
- [x] Remove after match
- [x] End screen
- [x] Gap
- [x] Polish card itself
- [x] Flips counter
- [x] Link to post
- [x] Misc
- [ ] Readme and public
- */
 
 export interface CardData {
   type: "post" | "comment";
