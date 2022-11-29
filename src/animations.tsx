@@ -12,7 +12,7 @@ const scale = "0.5";
 
 const ANIMATION_REVERSAL_SPEED = 1;
 
-const DURATION = 750;
+const DURATION = 600;
 const ANIMATIONS_OPS = {
   duration: DURATION,
 };
