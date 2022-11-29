@@ -12,9 +12,9 @@ const scale = "0.5";
 
 const ANIMATION_REVERSAL_SPEED = 1;
 
-const FLIP_DURATION = 750;
+const DURATION = 750;
 const ANIMATIONS_OPS = {
-  duration: FLIP_DURATION,
+  duration: DURATION,
 };
 
 
@@ -24,7 +24,6 @@ function applyStyles(el: HTMLElement, styles: Record<string, string>) {
 
 export type AnimationState = "ended" | "started" | "to-end" | "to-start";
 
-// Create a util called revertible animation
 export function registerFlipAnimation(
   inner: HTMLElement,
   outer: HTMLElement,
@@ -168,7 +167,7 @@ export function registerOutOfGameAnimation(el: HTMLElement, outOfGameAnimationSt
   createEffect(() => {
     if (outOfGameAnimationState()) {
       // This animation is one-way. Once you're out, you're out
-      el.animate([{opacity: "1"}, {opacity: "0"}], {duration: FLIP_DURATION}).onfinish = () => {
+      el.animate([{opacity: "1"}, {opacity: "0"}], {duration: DURATION}).onfinish = () => {
         el.remove()
       }
     }
