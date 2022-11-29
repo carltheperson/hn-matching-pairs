@@ -312,6 +312,12 @@ body {
         position: relative;
         pointer-events: none;
 
+        &:not(.out) a {
+          pointer-events: none;
+          color: darkgrey;
+        }
+
+
         .card {
           width: 100%;
           height: 100%;

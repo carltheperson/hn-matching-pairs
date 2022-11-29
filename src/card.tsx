@@ -68,7 +68,7 @@ export function Card({
   });
 
   return (
-    <div class="card-outer" ref={cardRef} onClick={requestFlip}>
+    <div class="card-outer" classList={{out: outOfGame()}} ref={cardRef} onClick={requestFlip}>
       <div
         class="card"
         ref={cardChildRef}
